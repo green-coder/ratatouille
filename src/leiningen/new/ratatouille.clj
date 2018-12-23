@@ -25,13 +25,22 @@
    {:keyword :clojure
     :names ["clojure" "clj"]
     :description "Uses Clojure."
-    :dependencies []}
+    :dependencies []
+    :context {:project {:source-paths ["src/clj"]
+                        :dependencies '[[org.clojure/clojure "1.10.0"]]}}}
 
    {:keyword :clojurescript
     :names ["clojurescript" "cljs"]
-    :description "Uses Clojurescript."
-    :dependencies []}
-
+    :description "Uses Clojurescript via Figwheel Main."
+    :dependencies []
+    :context {:project {:source-paths ["src/cljs"]
+                        :dependencies '[[org.clojure/clojurescript "1.10.439"]]
+                        :aliases {"fig"       ["trampoline" "run" "-m" "figwheel.main"]
+                                  "fig:build" ["trampoline" "run" "-m" "figwheel.main" "-b" "dev" "-r"]
+                                  "fig:min"   ["run" "-m" "figwheel.main" "-O" "advanced" "-bo" "dev"]}
+                                  ;"fig:test"  ["run" "-m" "figwheel.main" "-co" "test.cljs.edn" "-m" hello-world.test-runner]}
+                        :profiles {:dev {:dependencies '[[com.bhauman/figwheel-main "0.1.9"]
+                                                         [com.bhauman/rebel-readline-cljs "0.1.4"]]}}}}}
    {:keyword :default
     :names ["default"]
     :description "Is included when to tags are specified, implies some commonly used tags for a Clojure project."
@@ -40,37 +49,29 @@
    {:keyword :reagent
     :names ["reagent"]
     :description "Uses Reagent."
-    :dependencies [:clojurescript]}
+    :dependencies [:clojurescript]
+    :context {:project {:dependencies '[[reagent "0.8.1"]]}}}
 
    {:keyword :re-frame
     :names ["re-frame"]
     :description "Uses Re-frame."
-    :dependencies [:reagent]}
+    :dependencies [:clojurescript]
+    :context {:project {:dependencies '[[re-frame "0.10.6"]]}}}
 
-   {:keyword :re-frame+sample
-    :names ["re-frame+sample"]
-    :description "Uses Re-frame with some sample code and data."
-    :dependencies [:re-frame]}
+   {:keyword :garden
+    :names ["garden"]
+    :description "Uses garden."
+    :dependencies [:clojurescript]}
 
    {:keyword :sente
     :names ["sente"]
     :description "Uses Sente for real time communication between front end and back end."
     :dependencies [:clojure :clojurescript]}
 
-   {:keyword :sente+sample
-    :names ["sente+sample"]
-    :description "Uses Sente for real time communication between front end and back end."
-    :dependencies [:sente]}
-
    {:keyword :integrant
     :names ["integrant"]
     :description "Uses Integrant."
     :dependencies [:clojure]}
-
-   {:keyword :integrant+sample
-    :names ["integrant+sample"]
-    :description "Uses Integrant with some sample code and data."
-    :dependencies [:integrant]}
 
    {:keyword :front-end
     :names ["front-end"]
@@ -85,7 +86,7 @@
    {:keyword :fullstack
     :names ["fullstack"]
     :description "Includes default tags for fullstack development."
-    :dependencies [:git :readme :reagent :sente]}])
+    :dependencies [:git :readme :reagent :clojure]}])
 
 (defn unknown-tag [option]
   {:names [option]
@@ -161,16 +162,27 @@
 (defn set->map [s]
   (into {} (map (fn [k] [k true])) s))
 
+(defn deep-merge-with [f & vals]
+  (if (not-every? map? vals)
+    (reduce f vals)
+    (apply merge-with (partial deep-merge-with f) vals)))
+
 (defn ratatouille [project-name & options]
   (let [tags (or (parse-options project-name options)
                  (main/exit 0 "No files were created."))
-        context (merge stencil-util/context
+        context (apply deep-merge-with into
+                       stencil-util/context
                        {:tag (set->map tags)
                         :project {:name project-name
-                                  :year (t/year (t/now))}
+                                  :year (t/year (t/now))
+                                  :source-paths []
+                                  :dependencies []
+                                  :aliases {}
+                                  :profiles {:dev {:dependencies []}}}
                         :core (let [namespace (multi-segment (sanitize-ns project-name))]
                                 {:namespace namespace
-                                 :path (name-to-path namespace)})})
+                                 :path (name-to-path namespace)})}
+                       (mapv (comp :context tag-by-keyword) tags))
         files (concat
                 (list ["project.clj" (render "project.clj" context)])
                 (when (contains? tags :git)
