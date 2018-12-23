@@ -1,4 +1,5 @@
-(ns {{core.namespace}})
+(ns {{core.namespace}}
+  (:gen-class))
 
-(defn -main []
+(defn -main [& args]
   (println "Hello, world!"))
