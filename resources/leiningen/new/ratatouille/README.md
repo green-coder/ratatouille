@@ -4,7 +4,15 @@ FIXME: description
 
 ## Usage
 
-FIXME: explanation
+{{#tag.clojure}}
+To run the Clojure project:
+
+```shell
+lein run
+```
+
+{{/tag.clojure}}
+FIXME: more explanation
 
 ## Contribute
 
@@ -12,7 +20,7 @@ FIXME: explain people how to contribute to this project.
 
 ## License
 
-Copyright © 2018 FIXME
+Copyright © {{project.year}}
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.

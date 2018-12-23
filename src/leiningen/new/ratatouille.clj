@@ -1,5 +1,6 @@
 (ns leiningen.new.ratatouille
-  (:require [leiningen.core.main :as main]
+  (:require [clj-time.core :as t]
+            [leiningen.core.main :as main]
             [leiningen.new.stencil-util :as stencil-util]
             [leiningen.new.templates :refer [->files
                                              name-to-path
@@ -157,12 +158,16 @@
 
 (def render (renderer "ratatouille"))
 
+(defn set->map [s]
+  (into {} (map (fn [k] [k true])) s))
+
 (defn ratatouille [project-name & options]
   (let [tags (or (parse-options project-name options)
                  (main/exit 0 "No files were created."))
         context (merge stencil-util/context
-                       {;:tag (vec tags)
-                        :project {:name project-name}
+                       {:tag (set->map tags)
+                        :project {:name project-name
+                                  :year (t/year (t/now))}
                         :core (let [namespace (multi-segment (sanitize-ns project-name))]
                                 {:namespace namespace
                                  :path (name-to-path namespace)})})

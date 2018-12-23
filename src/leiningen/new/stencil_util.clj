@@ -1,4 +1,6 @@
-(ns leiningen.new.stencil-util)
+(ns leiningen.new.stencil-util
+  (:require [clojure.string :as str]
+            [leiningen.new.templates :as templates]))
 
 (defn- string-filter [f]
   ^:stencil/pass-render
@@ -6,7 +8,7 @@
     (f (render s ctx))))
 
 (def context
-  {:str {:cap (string-filter clojure.string/capitalize)
-         :upper (string-filter clojure.string/upper-case)
-         :lower (string-filter clojure.string/lower-case)
-         :path (string-filter leiningen.new.templates/name-to-path)}})
+  {:str {:cap (string-filter str/capitalize)
+         :upper (string-filter str/upper-case)
+         :lower (string-filter str/lower-case)
+         :path (string-filter templates/name-to-path)}})
