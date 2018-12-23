@@ -11,16 +11,18 @@
                                              sanitize-ns
                                              slurp-resource]]))
 
-(def tags
+(def all-tags
   [{:keyword :git
     :names ["git"]
     :description "Uses git."
-    :dependencies []}
+    :dependencies []
+    :context {}}
 
    {:keyword :readme
     :names ["readme"]
     :description "Has a readme.md file."
-    :dependencies []}
+    :dependencies []
+    :context {}}
 
    {:keyword :clojure
     :names ["clojure" "clj"]
@@ -44,7 +46,8 @@
    {:keyword :default
     :names ["default"]
     :description "Is included when to tags are specified, implies some commonly used tags for a Clojure project."
-    :dependencies [:git :readme :clojure]}
+    :dependencies [:git :readme :clojure]
+    :context {}}
 
    {:keyword :reagent
     :names ["reagent"]
@@ -61,32 +64,38 @@
    {:keyword :garden
     :names ["garden"]
     :description "Uses garden."
-    :dependencies [:clojurescript]}
+    :dependencies [:clojurescript]
+    :context {}}
 
    {:keyword :sente
     :names ["sente"]
     :description "Uses Sente for real time communication between front end and back end."
-    :dependencies [:clojure :clojurescript]}
+    :dependencies [:clojure :clojurescript]
+    :context {}}
 
    {:keyword :integrant
     :names ["integrant"]
     :description "Uses Integrant."
-    :dependencies [:clojure]}
+    :dependencies [:clojure]
+    :context {}}
 
    {:keyword :front-end
     :names ["front-end"]
     :description "Includes default tags for front end development."
-    :dependencies [:git :readme :reagent]}
+    :dependencies [:git :readme :reagent]
+    :context {}}
 
    {:keyword :back-end
     :names ["back-end"]
     :description "Includes default tags for back end development."
-    :dependencies [:git :readme :clojure]}
+    :dependencies [:git :readme :clojure]
+    :context {}}
 
    {:keyword :fullstack
     :names ["fullstack"]
     :description "Includes default tags for fullstack development."
-    :dependencies [:git :readme :reagent :clojure]}])
+    :dependencies [:git :readme :reagent :clojure]
+    :context {}}])
 
 (defn unknown-tag [option]
   {:names [option]
@@ -96,14 +105,14 @@
 (def tag-by-keyword
   (into {}
         (map (juxt :keyword identity))
-        tags))
+        all-tags))
 
 (def tag-by-name
   (into {}
         (mapcat (fn [tag]
                   (map (fn [name] [name tag])
                        (:names tag))))
-        tags))
+        all-tags))
 
 (defn print-tag-help! [tag]
   (main/info (format "%s:\n  %s\n"
@@ -117,14 +126,14 @@
 ;(print-tag-help! (:git tag-by-keyword))
 
 (defn parse-options
-  "Returns a set of tags or nil, eventually prints an error or help message."
+  "Returns a vector of tags or nil, eventually prints an error or help message."
   [project-name options]
   (cond
     ;; If the user wants to display some help messages.
     (= project-name "help")
     (cond
       (empty? options)
-      (doseq [tag tags]
+      (doseq [tag all-tags]
         (print-tag-help! tag))
 
       :else
@@ -145,22 +154,31 @@
 
           requested-tags (into #{} (map (comp :keyword tag-by-name)) options)
 
-          all-tags (into #{}
-                         (mapcat (fn [tag]
-                                   (tree-seq (constantly true)
-                                             (comp :dependencies tag-by-keyword)
-                                             tag)))
-                         requested-tags)
-          implied-tags (clojure.set/difference all-tags requested-tags)]
+          required-tags (into #{}
+                              (mapcat (fn [tag]
+                                        (tree-seq (constantly true)
+                                                  (comp :dependencies tag-by-keyword)
+                                                  tag)))
+                              requested-tags)
 
-      (main/info (str "Requested tags: " (vec requested-tags)))
-      (main/info (str "Implied tags: " (vec (sort implied-tags))))
-      all-tags)))
+          implied-tags (clojure.set/difference required-tags requested-tags)
+
+          ;; Returns the tags in the same order as they are defined.
+          tag-set-sort (fn [tag-set]
+                         (into []
+                               (comp (map :keyword)
+                                     (filter tag-set))
+                               all-tags))]
+
+      (main/info (str "Requested tags: " (tag-set-sort requested-tags)))
+      (main/info (str "Implied tags: " (tag-set-sort implied-tags)))
+
+      (tag-set-sort required-tags))))
 
 (def render (renderer "ratatouille"))
 
-(defn set->map [s]
-  (into {} (map (fn [k] [k true])) s))
+(defn coll->map [coll]
+  (into {} (map (fn [k] [k true])) coll))
 
 (defn deep-merge-with [f & vals]
   (if (not-every? map? vals)
@@ -172,7 +190,7 @@
                  (main/exit 0 "No files were created."))
         context (apply deep-merge-with into
                        stencil-util/context
-                       {:tag (set->map tags)
+                       {:tag (coll->map tags)
                         :project {:name project-name
                                   :year (t/year (t/now))
                                   :source-paths []
