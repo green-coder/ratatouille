@@ -36,7 +36,8 @@
     :description "Uses Clojurescript via Figwheel Main."
     :dependencies []
     :context {:project {:source-paths ["src/cljs"]
-                        :dependencies '[[org.clojure/clojurescript "1.10.439"]]
+                        :dependencies '[[org.clojure/clojure "1.10.0"]
+                                        [org.clojure/clojurescript "1.10.439"]]
                         :aliases {"fig"       ["trampoline" "run" "-m" "figwheel.main"]
                                   "fig:build" ["trampoline" "run" "-m" "figwheel.main" "-b" "dev" "-r"]
                                   "fig:min"   ["run" "-m" "figwheel.main" "-O" "advanced" "-bo" "dev"]}
@@ -126,7 +127,7 @@
 ;(print-tag-help! (:git tag-by-keyword))
 
 (defn parse-options
-  "Returns a vector of tags or nil, eventually prints an error or help message."
+  "Returns a set of tags or nil, eventually prints an error or help message."
   [project-name options]
   (cond
     ;; If the user wants to display some help messages.
@@ -164,16 +165,16 @@
           implied-tags (clojure.set/difference required-tags requested-tags)
 
           ;; Returns the tags in the same order as they are defined.
-          tag-set-sort (fn [tag-set]
-                         (into []
-                               (comp (map :keyword)
-                                     (filter tag-set))
-                               all-tags))]
+          tag-sorted-into (fn [dst tag-set]
+                            (into dst
+                                  (comp (map :keyword)
+                                        (filter tag-set))
+                                  all-tags))]
 
-      (main/info (str "Requested tags: " (tag-set-sort requested-tags)))
-      (main/info (str "Implied tags: " (tag-set-sort implied-tags)))
+      (main/info (str "Requested tags: " (tag-sorted-into [] requested-tags)))
+      (main/info (str "Implied tags: " (tag-sorted-into [] implied-tags)))
 
-      (tag-set-sort required-tags))))
+      (tag-sorted-into (sorted-set) required-tags))))
 
 (def render (renderer "ratatouille"))
 
@@ -185,10 +186,14 @@
     (reduce f vals)
     (apply merge-with (partial deep-merge-with f) vals)))
 
+(defn into-dedup [coll1 coll2]
+  (let [s (set coll1)]
+    (into coll1 (remove s) coll2)))
+
 (defn ratatouille [project-name & options]
   (let [tags (or (parse-options project-name options)
                  (main/exit 0 "No files were created."))
-        context (apply deep-merge-with into
+        context (apply deep-merge-with into-dedup
                        stencil-util/context
                        {:tag (coll->map tags)
                         :project {:name project-name
@@ -210,7 +215,11 @@
                 (when (contains? tags :clojure)
                   (list ["src/clj/{{core.path}}.clj" (render "src/clj/core.clj" context)]))
                 (when (contains? tags :clojurescript)
-                  (list ["src/cljs/{{core.path}}.cljs" (render "src/cljs/core.cljs" context)])))]
+                  (list ["dev.cljs.edn" (render "dev.cljs.edn" context)]
+                        ["figwheel-main.edn" (render "figwheel-main.edn" context)]
+                        ["resources/public/index.html" (render "resources/public/index.html" context)]
+                        ["resources/public/css/style.css" (render "resources/public/css/style.css" context)]
+                        ["src/cljs/{{core.path}}.cljs" (render "src/cljs/core.cljs" context)])))]
     (apply ->files
            (assoc context
              :name (-> context :project :name))
