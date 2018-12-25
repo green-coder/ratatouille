@@ -62,10 +62,10 @@
     :description "Uses Reagent."
     :dependencies [:clojurescript]
     :context {:project {:dependencies ((juxt :reagent) latest-artifacts)}
-              :core {:ns {:require '[{:ns goog.dom
-                                      :as gdom}
-                                     {:ns reagent.core
-                                      :as ra}]}}}}
+              :main {:cljs {:ns {:require '[{:ns goog.dom
+                                             :as gdom}
+                                            {:ns reagent.core
+                                             :as ra}]}}}}}
 
    {:keyword :re-frame
     :names ["re-frame"]
@@ -213,9 +213,13 @@
                                   :dependencies []
                                   :aliases {}
                                   :profiles {:dev {:dependencies []}}}
-                        :core (let [namespace (multi-segment (sanitize-ns project-name))]
-                                {:ns {:name namespace}
-                                 :path (name-to-path namespace)})}
+                        :main (let [namespace (multi-segment (sanitize-ns project-name))
+                                    path (name-to-path namespace)]
+                                {:clj {:path (str "clj/" path ".clj")
+                                       :ns {:name namespace
+                                            :gen-class true}}
+                                 :cljs {:path (str "cljs/" path ".cljs")
+                                        :ns {:name namespace}}})}
                        (mapv (comp :context tag-by-keyword) tags))
         files (concat
                 (list ["project.clj" (render "project.clj" context)])
@@ -224,13 +228,13 @@
                 (when (contains? tags :readme)
                   (list ["README.md" (render "README.md" context)]))
                 (when (contains? tags :clojure)
-                  (list ["src/clj/{{core.path}}.clj" (render "src/clj/core.clj" context)]))
+                  (list ["src/{{main.clj.path}}" (render "src/clj/main.clj" context)]))
                 (when (contains? tags :clojurescript)
                   (list ["dev.cljs.edn" (render "dev.cljs.edn" context)]
                         ["figwheel-main.edn" (render "figwheel-main.edn" context)]
                         ["resources/public/index.html" (render "resources/public/index.html" context)]
                         ["resources/public/css/style.css" (render "resources/public/css/style.css" context)]
-                        ["src/cljs/{{core.path}}.cljs" (render "src/cljs/core.cljs" context)])))]
+                        ["src/{{main.cljs.path}}" (render "src/cljs/main.cljs" context)])))]
     (apply ->files
            (assoc context
              :name (-> context :project :name))

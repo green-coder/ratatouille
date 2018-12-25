@@ -1,4 +1,4 @@
-{{#clj.ns}}[:core]{{/clj.ns}}
+{{#clj.ns}}#ctx main.cljs.ns{{/clj.ns}}
 
 ;; Prints something in the browser's console.
 (println "Hello, world from Clojurescript!")
@@ -15,7 +15,7 @@
    [:p "Counter: " (:counter @app-state)]
    [:button {:on-click #(swap! app-state update-in [:counter] inc)}
             "+1"]
-   [:h3 "Edit this in src/cljs/{{core.path}}.cljs and watch it change!"]])
+   [:h3 "Edit this in src/{{main.cljs.path}} and watch it change!"]])
 
 (defn mount-app-element []
   (when-let [app-element (gdom/getElement "app")]
