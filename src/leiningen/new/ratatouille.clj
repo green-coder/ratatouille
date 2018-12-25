@@ -50,7 +50,8 @@
                                   "fig:build" ["trampoline" "run" "-m" "figwheel.main" "-b" "dev" "-r"]
                                   "fig:min"   ["run" "-m" "figwheel.main" "-O" "advanced" "-bo" "dev"]}
                                   ;"fig:test"  ["run" "-m" "figwheel.main" "-co" "test.cljs.edn" "-m" hello-world.test-runner]}
-                        :profiles {:dev {:dependencies ((juxt :figwheel-main :rebel-readline-cljs) latest-artifacts)}}}}}
+                        :profiles {:dev {:dependencies ((juxt :figwheel-main :rebel-readline-cljs) latest-artifacts)}}}
+              :main {:cljs {:ns {:meta {:figwheel-hooks true}}}}}}
    {:keyword :default
     :names ["default"]
     :description "Is included when to tags are specified, implies some commonly used tags for a Clojure project."

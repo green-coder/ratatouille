@@ -25,6 +25,15 @@
         (contains? f-meta :stencil/pass-context) (apply f ctx args)
         :else (apply f args)))))
 
+(defn- meta->str [m]
+  (case (count m)
+    0 nil
+    1 (let [entry (first m)]
+        (str "^" (if (true? (second entry))
+                   (first entry)
+                   m)))
+    (str "^" m)))
+
 (defn multiline-coll [indent coll]
   (cond (vector? coll) (str "["
                             (str/join (apply str "\n" (repeat (+ indent 1) " "))
@@ -43,7 +52,7 @@
                                    (mapv (fn [[k v]] (pr-str k v)) coll))
                          "}")))
 
-(defn clj-ns [{:keys [name require gen-class] :as namespace}]
+(defn clj-ns [{:keys [meta name require gen-class] :as namespace}]
   (let [require-str (str/join "\n            "
                               (map (fn [{:keys [ns as refer]}]
                                      (str "["
@@ -52,7 +61,10 @@
                                           (when refer (str " :refer " refer))
                                           "]"))
                                    require))]
-    (str "(ns " name
+    (str "(ns "
+         (when meta
+           (str (meta->str meta) " "))
+         name
          (when (seq require)
            (str "\n  (:require " require-str ")"))
          (when gen-class
