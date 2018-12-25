@@ -11,6 +11,15 @@
                                              sanitize-ns
                                              slurp-resource]]))
 
+;; All the artifacts that Ratatouille is going to use are grouped here, making it easier to check for obsolescence.
+(def latest-artifacts
+  {:clojure '[org.clojure/clojure "1.10.0"]
+   :clojurescript '[org.clojure/clojurescript "1.10.439"]
+   :figwheel-main '[com.bhauman/figwheel-main "0.1.9"]
+   :rebel-readline-cljs '[com.bhauman/rebel-readline-cljs "0.1.4"]
+   :reagent '[reagent "0.8.1"]
+   :re-frame '[re-frame "0.10.6"]})
+
 (def all-tags
   [{:keyword :git
     :names ["git"]
@@ -29,21 +38,19 @@
     :description "Uses Clojure."
     :dependencies []
     :context {:project {:source-paths ["src/clj"]
-                        :dependencies '[[org.clojure/clojure "1.10.0"]]}}}
+                        :dependencies ((juxt :clojure) latest-artifacts)}}}
 
    {:keyword :clojurescript
     :names ["clojurescript" "cljs"]
     :description "Uses Clojurescript via Figwheel Main."
     :dependencies []
     :context {:project {:source-paths ["src/cljs"]
-                        :dependencies '[[org.clojure/clojure "1.10.0"]
-                                        [org.clojure/clojurescript "1.10.439"]]
+                        :dependencies ((juxt :clojure :clojurescript) latest-artifacts)
                         :aliases {"fig"       ["trampoline" "run" "-m" "figwheel.main"]
                                   "fig:build" ["trampoline" "run" "-m" "figwheel.main" "-b" "dev" "-r"]
                                   "fig:min"   ["run" "-m" "figwheel.main" "-O" "advanced" "-bo" "dev"]}
                                   ;"fig:test"  ["run" "-m" "figwheel.main" "-co" "test.cljs.edn" "-m" hello-world.test-runner]}
-                        :profiles {:dev {:dependencies '[[com.bhauman/figwheel-main "0.1.9"]
-                                                         [com.bhauman/rebel-readline-cljs "0.1.4"]]}}}}}
+                        :profiles {:dev {:dependencies ((juxt :figwheel-main :rebel-readline-cljs) latest-artifacts)}}}}}
    {:keyword :default
     :names ["default"]
     :description "Is included when to tags are specified, implies some commonly used tags for a Clojure project."
@@ -54,13 +61,13 @@
     :names ["reagent"]
     :description "Uses Reagent."
     :dependencies [:clojurescript]
-    :context {:project {:dependencies '[[reagent "0.8.1"]]}}}
+    :context {:project {:dependencies ((juxt :reagent) latest-artifacts)}}}
 
    {:keyword :re-frame
     :names ["re-frame"]
     :description "Uses Re-frame."
     :dependencies [:clojurescript]
-    :context {:project {:dependencies '[[re-frame "0.10.6"]]}}}
+    :context {:project {:dependencies ((juxt :re-frame) latest-artifacts)}}}
 
    {:keyword :garden
     :names ["garden"]
