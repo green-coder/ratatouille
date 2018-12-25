@@ -54,7 +54,7 @@
               :main {:cljs {:ns {:meta {:figwheel-hooks true}}}}}}
    {:keyword :default
     :names ["default"]
-    :description "Is included when to tags are specified, implies some commonly used tags for a Clojure project."
+    :description "Is included when no tags are specified, implies some commonly used tags for a Clojure project."
     :dependencies [:git :readme :clojure]
     :context {}}
 
@@ -72,7 +72,13 @@
     :names ["re-frame"]
     :description "Uses Re-frame."
     :dependencies [:clojurescript]
-    :context {:project {:dependencies ((juxt :re-frame) latest-artifacts)}}}
+    :context {:project {:dependencies ((juxt :re-frame) latest-artifacts)}
+              :main {:cljs {:ns {:require '[{:ns goog.dom
+                                             :as gdom}
+                                            {:ns reagent.core
+                                             :as ra}
+                                            {:ns re-frame.core
+                                             :as rf}]}}}}}
 
    {:keyword :garden
     :names ["garden"]
