@@ -6,7 +6,7 @@
 
   :min-lein-version "2.8.1"
 
-  :main ^:skip-aot {{core.namespace}}
+  :main ^:skip-aot {{core.ns.name}}
 
   :source-paths {{{project.source-paths}}}
   :resource-paths ["resources" "target"]

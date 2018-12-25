@@ -61,7 +61,11 @@
     :names ["reagent"]
     :description "Uses Reagent."
     :dependencies [:clojurescript]
-    :context {:project {:dependencies ((juxt :reagent) latest-artifacts)}}}
+    :context {:project {:dependencies ((juxt :reagent) latest-artifacts)}
+              :core {:ns {:require '[{:ns goog.dom
+                                      :as gdom}
+                                     {:ns reagent.core
+                                      :as ra}]}}}}
 
    {:keyword :re-frame
     :names ["re-frame"]
@@ -210,7 +214,7 @@
                                   :aliases {}
                                   :profiles {:dev {:dependencies []}}}
                         :core (let [namespace (multi-segment (sanitize-ns project-name))]
-                                {:namespace namespace
+                                {:ns {:name namespace}
                                  :path (name-to-path namespace)})}
                        (mapv (comp :context tag-by-keyword) tags))
         files (concat
