@@ -12,9 +12,9 @@
   :resource-paths ["resources" "target"]
   :target-path "target/%s"
 
-  :dependencies {{{project.dependencies}}}
+  :dependencies {{#str.multiline}}16 #ctx project.dependencies{{/str.multiline}}
 
-  :aliases {{{project.aliases}}}
+  :aliases {{#str.multiline}}11 #ctx project.aliases{{/str.multiline}}
 
-  :profiles {:dev {:dependencies {{{project.profiles.dev.dependencies}}}}
+  :profiles {:dev {:dependencies {{#str.multiline}}33 #ctx project.profiles.dev.dependencies{{/str.multiline}}}
              :uberjar {:aot :all}})

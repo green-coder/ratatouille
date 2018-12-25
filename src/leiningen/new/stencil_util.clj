@@ -25,6 +25,24 @@
         (contains? f-meta :stencil/pass-context) (apply f ctx args)
         :else (apply f args)))))
 
+(defn multiline-coll [indent coll]
+  (cond (vector? coll) (str "["
+                            (str/join (apply str "\n" (repeat (+ indent 1) " "))
+                                      coll)
+                            "]")
+        (list? coll) (str "("
+                          (str/join (apply str "\n" (repeat (+ indent 1) " "))
+                                    coll)
+                          ")")
+        (set? coll) (str "#{"
+                         (str/join (apply str "\n" (repeat (+ indent 2) " "))
+                                   coll)
+                         "}")
+        (map? coll) (str "{"
+                         (str/join (apply str "\n" (repeat (+ indent 1) " "))
+                                   (mapv (fn [[k v]] (pr-str k v)) coll))
+                         "}")))
+
 (defn clj-ns [{:keys [name require gen-class] :as namespace}]
   (let [require-str (str/join "\n            "
                               (map (fn [{:keys [ns as refer]}]
@@ -45,5 +63,6 @@
   {:str {:cap (string-filter str/capitalize)
          :upper (string-filter str/upper-case)
          :lower (string-filter str/lower-case)
-         :path (string-filter templates/name-to-path)}
+         :path (string-filter templates/name-to-path)
+         :multiline (fn-apply multiline-coll)}
    :clj {:ns (fn-apply clj-ns)}})
