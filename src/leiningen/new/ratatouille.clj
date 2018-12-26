@@ -18,7 +18,8 @@
    :figwheel-main '[com.bhauman/figwheel-main "0.1.9"]
    :rebel-readline-cljs '[com.bhauman/rebel-readline-cljs "0.1.4"]
    :reagent '[reagent "0.8.1"]
-   :re-frame '[re-frame "0.10.6"]})
+   :re-frame '[re-frame "0.10.6"]
+   :garden '[garden "1.3.6"]})
 
 (def all-tags
   [{:keyword :git
@@ -84,7 +85,11 @@
     :names ["garden"]
     :description "Uses garden."
     :dependencies [:clojurescript]
-    :context {}}
+    :context {:project {:dependencies ((juxt :garden) latest-artifacts)}
+              :main {:cljs {:ns {:require '[{:ns goog.style
+                                             :as gs}
+                                            {:ns garden.core
+                                             :as gd}]}}}}}
 
    {:keyword :sente
     :names ["sente"]

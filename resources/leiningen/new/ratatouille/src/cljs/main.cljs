@@ -3,6 +3,11 @@
 ;; Prints something in the browser's console.
 (enable-console-print!)
 (println "Hello, world from Clojurescript!")
+{{#tag.garden}}
+
+;; Install some CSS style in the browser, dynamically.
+(gs/installStyles (gd/css [:body {:background "#c0c0c0"}]))
+{{/tag.garden}}
 {{#tag.reagent}}
 
 ;; State of the Reagent app.
