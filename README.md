@@ -7,20 +7,20 @@ A Leiningen template which is using a small selection of awesome libraries avail
 ## Usage
 
 ```shell
-lein new ratatouille <your-app-name> [...options]
+lein new ratatouille <your-app-name> --snapshot -- [...options]
 ```
 
 To see the options:
 
 ```shell
-lein new ratatouille help
-lein new ratatouille help [...options]
+lein new ratatouille help  --snapshot
+lein new ratatouille help  --snapshot -- [...options]
 ```
 
 To create a project `my-app` which uses `git` and `re-frame`:
 
 ```shell
-lein new ratatouille my-app git re-frame
+lein new ratatouille my-app --snapshot -- git re-frame
 ```
 
 ## License
