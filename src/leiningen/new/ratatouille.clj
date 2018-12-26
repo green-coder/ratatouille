@@ -89,37 +89,37 @@
               :main {:cljs {:ns {:require '[{:ns goog.style
                                              :as gs}
                                             {:ns garden.core
-                                             :as gd}]}}}}}
+                                             :as gd}]}}}}}])
 
-   {:keyword :sente
-    :names ["sente"]
-    :description "Uses Sente for real time communication between front end and back end."
-    :dependencies [:clojure :clojurescript]
-    :context {}}
-
-   {:keyword :integrant
-    :names ["integrant"]
-    :description "Uses Integrant."
-    :dependencies [:clojure]
-    :context {}}
-
-   {:keyword :front-end
-    :names ["front-end"]
-    :description "Includes default tags for front end development."
-    :dependencies [:git :readme :reagent]
-    :context {}}
-
-   {:keyword :back-end
-    :names ["back-end"]
-    :description "Includes default tags for back end development."
-    :dependencies [:git :readme :clojure]
-    :context {}}
-
-   {:keyword :fullstack
-    :names ["fullstack"]
-    :description "Includes default tags for fullstack development."
-    :dependencies [:git :readme :reagent :clojure]
-    :context {}}])
+   ;{:keyword :sente
+   ; :names ["sente"]
+   ; :description "Uses Sente for real time communication between front end and back end."
+   ; :dependencies [:clojure :clojurescript]
+   ; :context {}}
+   ;
+   ;{:keyword :integrant
+   ; :names ["integrant"]
+   ; :description "Uses Integrant."
+   ; :dependencies [:clojure]
+   ; :context {}}
+   ;
+   ;{:keyword :front-end
+   ; :names ["front-end"]
+   ; :description "Includes default tags for front end development."
+   ; :dependencies [:git :readme :reagent]
+   ; :context {}}
+   ;
+   ;{:keyword :back-end
+   ; :names ["back-end"]
+   ; :description "Includes default tags for back end development."
+   ; :dependencies [:git :readme :clojure]
+   ; :context {}}
+   ;
+   ;{:keyword :fullstack
+   ; :names ["fullstack"]
+   ; :description "Includes default tags for fullstack development."
+   ; :dependencies [:git :readme :reagent :clojure]
+   ; :context {}}])
 
 (defn unknown-tag [option]
   {:names [option]
