@@ -2,7 +2,7 @@
 
 [![Clojars Project](http://clojars.org/ratatouille/lein-template/latest-version.svg)](http://clojars.org/ratatouille/lein-template)
 
-A Leiningen template which is using a small selection of awesome libraries available in the Clojure eco-system.
+A Leiningen template which is using a small selection of the most awesome libraries available in the Clojure eco-system.
 
 ## Usage
 

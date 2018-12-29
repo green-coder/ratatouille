@@ -13,8 +13,9 @@
   :target-path "target/%s"
 
   :dependencies {{#str.multiline}}16 #ctx project.dependencies{{/str.multiline}}
+{{#project.aliases}}
 
-  :aliases {{#str.multiline}}11 #ctx project.aliases{{/str.multiline}}
+  :aliases {{#str.multiline}}11 #ctx .{{/str.multiline}}
+{{/project.aliases}}
 
-  :profiles {:dev {:dependencies {{#str.multiline}}33 #ctx project.profiles.dev.dependencies{{/str.multiline}}}
-             :uberjar {:aot :all}})
+{{#project.profiles}}  :profiles {{{project.profiles}}}{{/project.profiles}})

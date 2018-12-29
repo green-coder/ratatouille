@@ -1,5 +1,6 @@
 (ns leiningen.new.ratatouille
-  (:require [clj-time.core :as t]
+  (:require [clojure.string :as str]
+            [clj-time.core :as t]
             [leiningen.core.main :as main]
             [leiningen.new.stencil-util :as stencil-util]
             [leiningen.new.templates :refer [->files
@@ -39,7 +40,15 @@
     :description "Uses Clojure."
     :dependencies []
     :context {:project {:source-paths ["src/clj"]
-                        :dependencies ((juxt :clojure) latest-artifacts)}}}
+                        :dependencies ((juxt :clojure) latest-artifacts)
+                        :profiles {:uberjar {:aot :all}}}
+              :main {:clj
+                     ^:ctx (fn [ctx]
+                             (let [project-ns (get-in ctx [:project :ns])
+                                   path (name-to-path project-ns)]
+                               {:path (str "clj/" path ".clj")
+                                :ns {:name project-ns
+                                     :gen-class true}}))}}}
 
    {:keyword :clojurescript
     :names ["clojurescript" "cljs"]
@@ -52,7 +61,13 @@
                                   "fig:min"   ["run" "-m" "figwheel.main" "-O" "advanced" "-bo" "dev"]}
                                   ;"fig:test"  ["run" "-m" "figwheel.main" "-co" "test.cljs.edn" "-m" hello-world.test-runner]}
                         :profiles {:dev {:dependencies ((juxt :figwheel-main :rebel-readline-cljs) latest-artifacts)}}}
-              :main {:cljs {:ns {:meta {:figwheel-hooks true}}}}}}
+              :main {:cljs
+                     ^:ctx (fn [ctx]
+                             (let [project-ns (get-in ctx [:project :ns])
+                                   path (name-to-path project-ns)]
+                               {:path (str "cljs/" path ".cljs")
+                                :ns {:name project-ns
+                                     :meta {:figwheel-hooks true}}}))}}}
    {:keyword :default
     :names ["default"]
     :description "Is included when no tags are specified, implies some commonly used tags for a Clojure project."
@@ -204,35 +219,53 @@
 (defn coll->map [coll]
   (into {} (map (fn [k] [k true])) coll))
 
-(defn deep-merge-with [f & vals]
-  (if (not-every? map? vals)
-    (reduce f vals)
-    (apply merge-with (partial deep-merge-with f) vals)))
 
-(defn into-dedup [coll1 coll2]
-  (let [s (set coll1)]
-    (into coll1 (remove s) coll2)))
+(defn context-merge [prev-ctx next-ctx]
+  (letfn [(walk [f val]
+            (cond (map? val) (into {} (map (fn [[k v]] [k (walk f v)])) val)
+                  (coll? val) (into (empty val) (map (fn [x] (walk f x))) val)
+                  :else (f val)))
+          (apply-to-context [x]
+            (if (fn? x)
+              (if-let [ctx-meta (:ctx (meta x))]
+                (x (get-in prev-ctx (if (true? ctx-meta) [] ctx-meta)))
+                x)
+              x))
+          (ctx-merge [val1 val2]
+            (cond (nil? val1) val2
+
+                  (map? val1)
+                  (do (assert (map? val2) (prn-str val2))
+                      (into val1
+                            (map (fn [[k v]]
+                                   [k (ctx-merge (val1 k) v)]))
+                            val2))
+
+                  (vector? val1)
+                  (do (assert (vector? val2) (prn-str val2))
+                      (into val1 val2))
+
+                  :else val2))]
+    (ctx-merge prev-ctx (walk apply-to-context next-ctx))))
+
+(defn make-context [project-name tags]
+  (let [project-ns (multi-segment (sanitize-ns project-name))
+        configs (into [stencil-util/context
+                       {:tag (coll->map tags)}
+                       {:project {:name project-name
+                                  :year (t/year (t/now))
+                                  :ns project-ns
+                                  :ns-parts (str/split project-ns #"\.")}}]
+                      (map (comp :context tag-by-keyword))
+                      tags)]
+    (reduce context-merge {} configs)))
+
+;(make-context "patate" [:clojurescript :reagent :garden])
 
 (defn ratatouille [project-name & options]
   (let [tags (or (parse-options project-name options)
                  (main/exit 0 "No files were created."))
-        context (apply deep-merge-with into-dedup
-                       stencil-util/context
-                       {:tag (coll->map tags)
-                        :project {:name project-name
-                                  :year (t/year (t/now))
-                                  :source-paths []
-                                  :dependencies []
-                                  :aliases {}
-                                  :profiles {:dev {:dependencies []}}}
-                        :main (let [namespace (multi-segment (sanitize-ns project-name))
-                                    path (name-to-path namespace)]
-                                {:clj {:path (str "clj/" path ".clj")
-                                       :ns {:name namespace
-                                            :gen-class true}}
-                                 :cljs {:path (str "cljs/" path ".cljs")
-                                        :ns {:name namespace}}})}
-                       (mapv (comp :context tag-by-keyword) tags))
+        context (make-context project-name tags)
         files (concat
                 (list ["project.clj" (render "project.clj" context)])
                 (when (contains? tags :git)
