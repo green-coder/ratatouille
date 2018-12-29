@@ -5,8 +5,10 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
   :min-lein-version "2.8.1"
+{{#main.clj.ns}}
 
-  :main ^:skip-aot {{main.clj.ns.name}}
+  :main ^:skip-aot {{name}}
+{{/main.clj.ns}}
 
   :source-paths {{{project.source-paths}}}
   :resource-paths ["resources" "target"]
