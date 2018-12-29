@@ -1,0 +1,8 @@
+^{:watch-dirs ["src/cljs"]
+  :css-dirs ["resources/public/css"]}
+{:main {{devcards.cljs.ns.name}}
+ :devcards true
+ :output-to  "resources/public/cljs-out/dev-main.js"
+ :output-dir "resources/public/cljs-out/dev"
+ :source-map-timestamp true}
+

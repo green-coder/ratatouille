@@ -52,21 +52,25 @@
                                    (mapv (fn [[k v]] (pr-str k v)) coll))
                          "}")))
 
-(defn clj-ns [{:keys [meta name require gen-class] :as namespace}]
-  (let [require-str (str/join "\n            "
-                              (map (fn [{:keys [ns as refer]}]
-                                     (str "["
-                                          ns
-                                          (when as (str " :as " as))
-                                          (when refer (str " :refer " refer))
-                                          "]"))
-                                   require))]
+(defn clj-ns [{:keys [meta name require require-macros gen-class] :as namespace}]
+  (let [require-entries
+        (fn [entries]
+          (str/join "\n            "
+                    (map (fn [{:keys [ns as refer]}]
+                           (str "["
+                                ns
+                                (when as (str " :as " as))
+                                (when refer (str " :refer " refer))
+                                "]"))
+                         entries)))]
     (str "(ns "
          (when meta
            (str (meta->str meta) " "))
          name
          (when (seq require)
-           (str "\n  (:require " require-str ")"))
+           (str "\n  (:require " (require-entries require) ")"))
+         (when (seq require-macros)
+           (str "\n  (:require-macros " (require-entries require-macros) ")"))
          (when gen-class
            "\n  (:gen-class)")
          ")")))

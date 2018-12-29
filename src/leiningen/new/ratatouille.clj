@@ -20,7 +20,8 @@
    :rebel-readline-cljs '[com.bhauman/rebel-readline-cljs "0.1.4"]
    :reagent '[reagent "0.8.1"]
    :re-frame '[re-frame "0.10.6"]
-   :garden '[garden "1.3.6"]})
+   :garden '[garden "1.3.6"]
+   :devcards '[devcards "0.2.6"]})
 
 (def all-tags
   [{:keyword :git
@@ -104,7 +105,25 @@
               :main {:cljs {:ns {:require '[{:ns goog.style
                                              :as gs}
                                             {:ns garden.core
-                                             :as gd}]}}}}}])
+                                             :as gd}]}}}}}
+
+   {:keyword :devcards
+    :names ["devcards"]
+    :description "Uses Devcards for developing UI components in isolation from the rest of the app."
+    :dependencies [:clojurescript]
+    :context {:project {:dependencies ((juxt :devcards) latest-artifacts)
+                        :aliases {"fig:devcards" ["trampoline" "run" "-m" "figwheel.main" "-b" "devcards"]}}
+              :devcards {:cljs ^:ctx (fn [ctx]
+                                       (let [project-ns (get-in ctx [:project :ns-parts])
+                                             namespace (->> (conj (pop project-ns) "devcards")
+                                                            (str/join "."))
+                                             path (name-to-path namespace)]
+                                         {:path (str "cljs/" path ".cljs")
+                                          :ns {:name namespace
+                                               :require '[{:ns devcards.core
+                                                           :as dc}]
+                                               :require-macros '[{:ns devcards.core
+                                                                  :refer [defcard]}]}}))}}}])
 
    ;{:keyword :sente
    ; :names ["sente"]
@@ -279,7 +298,10 @@
                         ["figwheel-main.edn" (render "figwheel-main.edn" context)]
                         ["resources/public/index.html" (render "resources/public/index.html" context)]
                         ["resources/public/css/style.css" (render "resources/public/css/style.css" context)]
-                        ["src/{{main.cljs.path}}" (render "src/cljs/main.cljs" context)])))]
+                        ["src/{{main.cljs.path}}" (render "src/cljs/main.cljs" context)]))
+                (when (contains? tags :devcards)
+                  (list ["devcards.cljs.edn" (render "devcards.cljs.edn" context)]
+                        ["src/{{devcards.cljs.path}}" (render "src/cljs/devcards.cljs" context)])))]
     (apply ->files
            (assoc context
              :name (-> context :project :name))
