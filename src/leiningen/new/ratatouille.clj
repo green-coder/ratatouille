@@ -58,7 +58,7 @@
     :context {:project {:source-paths ["src/cljs"]
                         :dependencies ((juxt :clojure :clojurescript) latest-artifacts)
                         :aliases {"fig"       ["trampoline" "run" "-m" "figwheel.main"]
-                                  "fig:build" ["trampoline" "run" "-m" "figwheel.main" "-b" "dev" "-r"]
+                                  "fig:dev"   ["trampoline" "run" "-m" "figwheel.main" "-b" "dev" "-r"]
                                   "fig:min"   ["run" "-m" "figwheel.main" "-O" "advanced" "-bo" "dev"]}
                                   ;"fig:test"  ["run" "-m" "figwheel.main" "-co" "test.cljs.edn" "-m" hello-world.test-runner]}
                         :profiles {:dev {:dependencies ((juxt :figwheel-main :rebel-readline-cljs) latest-artifacts)}}}
@@ -120,10 +120,21 @@
                                              path (name-to-path namespace)]
                                          {:path (str "cljs/" path ".cljs")
                                           :ns {:name namespace
-                                               :require '[{:ns devcards.core
-                                                           :as dc}]
+                                               :require [{:ns (-> ctx :project :ns)}]
                                                :require-macros '[{:ns devcards.core
-                                                                  :refer [defcard]}]}}))}}}])
+                                                                  :as dc
+                                                                  :refer [defcard]}]}}))}
+              :main {:cljs
+                     ^:ctx (fn [ctx]
+                             {:ns {:require '[{:ns devcards.core}]
+                                   :require-macros [{:ns 'devcards.core
+                                                     :as 'dc
+                                                     :refer (into []
+                                                                  (remove nil?)
+                                                                  [(when (-> ctx :tag :clojurescript)
+                                                                     'defcard)
+                                                                   (when (-> ctx :tag :reagent)
+                                                                     'defcard-rg)])}]}})}}}])
 
    ;{:keyword :sente
    ; :names ["sente"]
@@ -135,24 +146,6 @@
    ; :names ["integrant"]
    ; :description "Uses Integrant."
    ; :dependencies [:clojure]
-   ; :context {}}
-   ;
-   ;{:keyword :front-end
-   ; :names ["front-end"]
-   ; :description "Includes default tags for front end development."
-   ; :dependencies [:git :readme :reagent]
-   ; :context {}}
-   ;
-   ;{:keyword :back-end
-   ; :names ["back-end"]
-   ; :description "Includes default tags for back end development."
-   ; :dependencies [:git :readme :clojure]
-   ; :context {}}
-   ;
-   ;{:keyword :fullstack
-   ; :names ["fullstack"]
-   ; :description "Includes default tags for fullstack development."
-   ; :dependencies [:git :readme :reagent :clojure]
    ; :context {}}])
 
 (defn unknown-tag [option]
@@ -294,13 +287,14 @@
                 (when (contains? tags :clojure)
                   (list ["src/{{main.clj.path}}" (render "src/clj/main.clj" context)]))
                 (when (contains? tags :clojurescript)
-                  (list ["dev.cljs.edn" (render "dev.cljs.edn" context)]
-                        ["figwheel-main.edn" (render "figwheel-main.edn" context)]
+                  (list ["figwheel-main.edn" (render "figwheel-main.edn" context)]
+                        ["dev.cljs.edn" (render "dev.cljs.edn" context)]
                         ["resources/public/index.html" (render "resources/public/index.html" context)]
                         ["resources/public/css/style.css" (render "resources/public/css/style.css" context)]
                         ["src/{{main.cljs.path}}" (render "src/cljs/main.cljs" context)]))
                 (when (contains? tags :devcards)
                   (list ["devcards.cljs.edn" (render "devcards.cljs.edn" context)]
+                        ["resources/public/devcards.html" (render "resources/public/devcards.html" context)]
                         ["src/{{devcards.cljs.path}}" (render "src/cljs/devcards.cljs" context)])))]
     (apply ->files
            (assoc context

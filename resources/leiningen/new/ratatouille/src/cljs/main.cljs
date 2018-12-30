@@ -3,24 +3,49 @@
 ;; Prints something in the browser's console.
 (enable-console-print!)
 (println "Hello, world from Clojurescript!")
-{{#tag.garden}}
 
+{{#tag.garden}}
 ;; Install some CSS style in the browser, dynamically.
 (gs/installStyles (gd/css [:body {:background "#c0c0c0"}]))
-{{/tag.garden}}
-{{#tag.reagent}}
 
+{{/tag.garden}}
+{{#tag.devcards}}
+;; Defines a card.
+(defcard my-data-card
+  "The card's description."
+  ["Hello, world!"
+   #{1 2 3 4 5}
+   {:a 0 :b 1 :c 2 :d 3 :e 4}])
+
+{{/tag.devcards}}
+{{#tag.reagent}}
 ;; State of the Reagent app.
 (defonce app-state
   (ra/atom {:text "Hello world from Reagent!"
             :counter 0}))
 
+;; A Reagent component
+(defn counter [ratom]
+  [:div
+   [:p "Counter: " (:counter @ratom)]
+   [:button {:on-click #(swap! ratom update-in [:counter] inc)}
+            "+1"]])
+
+{{#tag.devcards}}
+;; A devcard, to test the component above.
+(defcard-rg my-reagent-card
+  "The card's description."
+  (fn [ratom-data owner]
+    [counter ratom-data]) ; The Reagent component to test
+  {:counter 20} ; Reagent atom
+  {:inspect-data true
+   :history true})
+
+{{/tag.devcards}}
 (defn root-view-component []
   [:div
    [:h1 (:text @app-state)]
-   [:p "Counter: " (:counter @app-state)]
-   [:button {:on-click #(swap! app-state update-in [:counter] inc)}
-            "+1"]
+   [counter app-state]
    [:h3 "Edit this in src/{{main.cljs.path}} and watch it change!"]])
 
 (defn mount-app-element []
@@ -31,13 +56,14 @@
 (defn ^:after-load on-reload []
   (mount-app-element)
   ;; Optionally touch your app-state to force a re-rendering, depending on your application's needs.
-  (swap! app-state update-in [:__figwheel_reload_counter] inc))
+  (swap! app-state update-in [:figwheel/reload-counter] inc))
 
 ;; This is run only once, on the first program load.
-(defonce _ (mount-app-element))
+(defonce ^private first-run
+  (do (mount-app-element) nil))
+
 {{/tag.reagent}}
 {{#tag.re-frame}}
-
 ;; The initial state of the app.
 (def initial-db
   {:text "Hello world from Reagent!"
@@ -87,9 +113,11 @@
 (defn ^:after-load on-reload []
   (mount-app-element))
 
-(defonce _
+(defonce ^:private first-run
   ;; This is run only once, on the first program load.
   (do
     (rf/dispatch-sync [:event/initialize-db])
-    (mount-app-element)))
+    (mount-app-element)
+    nil))
+
 {{/tag.re-frame}}

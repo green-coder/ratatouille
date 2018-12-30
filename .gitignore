@@ -9,3 +9,6 @@ pom.xml.asc
 /.nrepl-port
 /.idea
 *.iml
+
+# The name of the project I use when testing the template.
+/patate
