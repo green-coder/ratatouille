@@ -11,6 +11,7 @@ Current template's options, and the setup they provide:
 - `clj`: Clojure project
 - `cljs`: Clojurescript project (auto-reload workflow via Figwheel Main)
 - `garden`: Garden
+- `rum`: Rum
 - `reagent`: Reagent
 - `re-frame`: Re-frame
 - `devcards`: Devcards

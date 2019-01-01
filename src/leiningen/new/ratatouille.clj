@@ -18,6 +18,7 @@
    :clojurescript '[org.clojure/clojurescript "1.10.439"]
    :figwheel-main '[com.bhauman/figwheel-main "0.1.9"]
    :rebel-readline-cljs '[com.bhauman/rebel-readline-cljs "0.1.4"]
+   :rum '[rum "0.11.3"]
    :reagent '[reagent "0.8.1"]
    :re-frame '[re-frame "0.10.6"]
    :garden '[garden "1.3.6"]
@@ -75,6 +76,16 @@
     :dependencies [:git :readme :clojure]
     :context {}}
 
+   {:keyword :rum
+    :names ["rum"]
+    :description "Uses Rum."
+    :dependencies [:clojurescript]
+    :context {:project {:dependencies ((juxt :rum) latest-artifacts)}
+              :main {:cljs {:ns {:require '[{:ns goog.dom
+                                             :as gdom}
+                                            {:ns rum.core
+                                             :as rum}]}}}}}
+
    {:keyword :reagent
     :names ["reagent"]
     :description "Uses Reagent."
@@ -127,14 +138,19 @@
               :main {:cljs
                      ^:ctx (fn [ctx]
                              {:ns {:require '[{:ns devcards.core}]
-                                   :require-macros [{:ns 'devcards.core
-                                                     :as 'dc
-                                                     :refer (into []
-                                                                  (remove nil?)
-                                                                  [(when (-> ctx :tag :clojurescript)
-                                                                     'defcard)
-                                                                   (when (-> ctx :tag :reagent)
-                                                                     'defcard-rg)])}]}})}}}])
+                                   :require-macros (into []
+                                                         (remove nil?)
+                                                         [{:ns 'devcards.core
+                                                           :as 'dc
+                                                           :refer (into []
+                                                                        (remove nil?)
+                                                                        [(when (-> ctx :tag :clojurescript)
+                                                                           'defcard)
+                                                                         (when (-> ctx :tag :reagent)
+                                                                           'defcard-rg)])}
+                                                          (when (-> ctx :tag :rum)
+                                                            '{:ns sablono.core
+                                                              :as sab})])}})}}}])
 
    ;{:keyword :sente
    ; :names ["sente"]

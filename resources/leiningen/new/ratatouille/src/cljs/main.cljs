@@ -18,6 +18,35 @@
    {:a 0 :b 1 :c 2 :d 3 :e 4}])
 
 {{/tag.devcards}}
+{{#tag.rum}}
+;; State of the counter
+(defonce counter-state (atom 0))
+
+;; A Rum component
+(rum/defc counter < rum/reactive []
+  [:div {:on-click (fn [_] (swap! counter-state inc))}
+        "Clicks: " (rum/react counter-state)])
+
+{{#tag.devcards}}
+;; A devcard, to test the component above.
+(defcard my-rum-card
+  "The card's description."
+  (sab/html (counter)))
+
+{{/tag.devcards}}
+(defn mount-app-element []
+  (when-let [app-element (gdom/getElement "app")]
+    (rum/mount (counter) app-element)))
+
+ ;; Reload hook, specified with the ^:after-load metadata.
+(defn ^:after-load on-reload []
+  (mount-app-element))
+
+;; This is run only once, on the first program load.
+(defonce ^private first-run
+  (do (mount-app-element) nil))
+
+{{/tag.rum}}
 {{#tag.reagent}}
 ;; State of the Reagent app.
 (defonce app-state
