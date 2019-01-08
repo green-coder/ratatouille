@@ -29,7 +29,7 @@ More information can be found at https://figwheel.org/
 To run the Clojurescript project:
 
 ```shell
-lein fig:build
+lein fig:dev
 ```
 
 A webpage to your app will open in a browser, and your clojurescript

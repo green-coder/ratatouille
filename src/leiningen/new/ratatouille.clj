@@ -53,7 +53,8 @@
                                    path (name-to-path project-ns)]
                                {:path (str "clj/" path ".clj")
                                 :ns {:name project-ns
-                                     :gen-class true}}))}}}
+                                     :gen-class true}}))}
+              :user {:clj {:ns {:name "user"}}}}}
 
    {:keyword :clojurescript
     :names ["clojurescript" "cljs"]
@@ -85,8 +86,7 @@
     :description "Uses Integrant."
     :dependencies [:clojure]
     :context {:project {:dependencies ((juxt :integrant :integrant-repl) latest-artifacts)}
-              :user {:clj {:ns {:name 'user
-                                :require '[{:ns integrant.core
+              :user {:clj {:ns {:require '[{:ns integrant.core
                                             :as ig}
                                            {:ns integrant.repl
                                             :refer [clear go halt prep init reset reset-all]}]}}}}}
@@ -299,8 +299,7 @@
                        {:project {:name project-name
                                   :year (t/year (t/now))
                                   :ns project-ns
-                                  :ns-parts (str/split project-ns #"\.")
-                                  :profiles {:dev {:source-paths ["dev"]}}}}]
+                                  :ns-parts (str/split project-ns #"\.")}}]
                       (map (comp :context tag-by-keyword))
                       tags)]
     (reduce context-merge {} configs)))
@@ -318,9 +317,8 @@
                 (when (contains? tags :readme)
                   (list ["README.md" (render "README.md" context)]))
                 (when (contains? tags :clojure)
-                  (list ["src/{{main.clj.path}}" (render "src/clj/main.clj" context)]))
-                (when (contains? tags :integrant)
-                  (list ["dev/user.clj" (render "dev/user.clj" context)]))
+                  (list ["dev/user.clj" (render "dev/user.clj" context)]
+                        ["src/{{main.clj.path}}" (render "src/clj/main.clj" context)]))
                 (when (contains? tags :clojurescript)
                   (list ["figwheel-main.edn" (render "figwheel-main.edn" context)]
                         ["dev.cljs.edn" (render "dev.cljs.edn" context)]

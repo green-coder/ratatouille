@@ -43,7 +43,7 @@
   (mount-app-element))
 
 ;; This is run only once, on the first program load.
-(defonce ^private first-run
+(defonce ^:private first-run
   (do (mount-app-element) nil))
 
 {{/tag.rum}}
