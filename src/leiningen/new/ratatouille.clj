@@ -73,7 +73,9 @@
                                    path (name-to-path project-ns)]
                                {:path (str "cljs/" path ".cljs")
                                 :ns {:name project-ns
-                                     :meta {:figwheel-hooks true}}}))}}}
+                                     :meta {:figwheel-hooks true}}}))}
+              :user {:clj {:ns {:require '[{:ns figwheel.main.api
+                                            :as fig}]}}}}}
 
    {:keyword :ancient
     :names ["ancient"]
