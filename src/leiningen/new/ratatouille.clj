@@ -19,6 +19,8 @@
    :figwheel-main '[com.bhauman/figwheel-main "0.1.9"]
    :rebel-readline-cljs '[com.bhauman/rebel-readline-cljs "0.1.4"]
    :ancient '[lein-ancient "0.6.15"]
+   :integrant '[integrant "0.7.0"]
+   :integrant-repl '[integrant/repl "0.3.1"]
    :rum '[rum "0.11.3"]
    :reagent '[reagent "0.8.1"]
    :re-frame '[re-frame "0.10.6"]
@@ -77,11 +79,17 @@
     :description "Uses the lein-ancient plugin."
     :dependencies []
     :context {:project {:plugins ((juxt :ancient) latest-artifacts)}}}
-   {:keyword :default
-    :names ["default"]
-    :description "Is included when no tags are specified, implies some commonly used tags for a Clojure project."
-    :dependencies [:git :readme :clojure]
-    :context {}}
+
+   {:keyword :integrant
+    :names ["integrant"]
+    :description "Uses Integrant."
+    :dependencies [:clojure]
+    :context {:project {:dependencies ((juxt :integrant :integrant-repl) latest-artifacts)}
+              :user {:clj {:ns {:name 'user
+                                :require '[{:ns integrant.core
+                                            :as ig}
+                                           {:ns integrant.repl
+                                            :refer [clear go halt prep init reset reset-all]}]}}}}}
 
    {:keyword :rum
     :names ["rum"]
@@ -157,19 +165,20 @@
                                                                            'defcard-rg)])}
                                                           (when (-> ctx :tag :rum)
                                                             '{:ns sablono.core
-                                                              :as sab})])}})}}}])
+                                                              :as sab})])}})}}}
 
    ;{:keyword :sente
    ; :names ["sente"]
    ; :description "Uses Sente for real time communication between front end and back end."
    ; :dependencies [:clojure :clojurescript]
    ; :context {}}
-   ;
-   ;{:keyword :integrant
-   ; :names ["integrant"]
-   ; :description "Uses Integrant."
-   ; :dependencies [:clojure]
-   ; :context {}}])
+
+   {:keyword :default
+    :names ["default"]
+    :description "Is included when no tags are specified, implies some commonly used tags for a Clojure project."
+    :dependencies [:git :readme :clojure]
+    :context {}}])
+
 
 (defn unknown-tag [option]
   {:names [option]
@@ -290,7 +299,8 @@
                        {:project {:name project-name
                                   :year (t/year (t/now))
                                   :ns project-ns
-                                  :ns-parts (str/split project-ns #"\.")}}]
+                                  :ns-parts (str/split project-ns #"\.")
+                                  :profiles {:dev {:source-paths ["dev"]}}}}]
                       (map (comp :context tag-by-keyword))
                       tags)]
     (reduce context-merge {} configs)))
@@ -309,6 +319,8 @@
                   (list ["README.md" (render "README.md" context)]))
                 (when (contains? tags :clojure)
                   (list ["src/{{main.clj.path}}" (render "src/clj/main.clj" context)]))
+                (when (contains? tags :integrant)
+                  (list ["dev/user.clj" (render "dev/user.clj" context)]))
                 (when (contains? tags :clojurescript)
                   (list ["figwheel-main.edn" (render "figwheel-main.edn" context)]
                         ["dev.cljs.edn" (render "dev.cljs.edn" context)]
