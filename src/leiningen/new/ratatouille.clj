@@ -18,6 +18,7 @@
    :clojurescript '[org.clojure/clojurescript "1.10.439"]
    :figwheel-main '[com.bhauman/figwheel-main "0.1.9"]
    :rebel-readline-cljs '[com.bhauman/rebel-readline-cljs "0.1.4"]
+   :ancient '[lein-ancient "0.6.15"]
    :rum '[rum "0.11.3"]
    :reagent '[reagent "0.8.1"]
    :re-frame '[re-frame "0.10.6"]
@@ -70,6 +71,12 @@
                                {:path (str "cljs/" path ".cljs")
                                 :ns {:name project-ns
                                      :meta {:figwheel-hooks true}}}))}}}
+
+   {:keyword :ancient
+    :names ["ancient"]
+    :description "Uses the lein-ancient plugin."
+    :dependencies []
+    :context {:project {:plugins ((juxt :ancient) latest-artifacts)}}}
    {:keyword :default
     :names ["default"]
     :description "Is included when no tags are specified, implies some commonly used tags for a Clojure project."

@@ -5,19 +5,25 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
   :min-lein-version "2.8.1"
+
 {{#main.clj.ns}}
-
   :main ^:skip-aot {{name}}
-{{/main.clj.ns}}
 
+{{/main.clj.ns}}
   :source-paths {{{project.source-paths}}}
   :resource-paths ["resources" "target"]
   :target-path "target/%s"
 
   :dependencies {{#str.multiline}}16 #ctx project.dependencies{{/str.multiline}}
+{{#project.plugins}}
+
+  :plugins {{#str.multiline}}11 #ctx .{{/str.multiline}}
+{{/project.plugins}}
 {{#project.aliases}}
 
   :aliases {{#str.multiline}}11 #ctx .{{/str.multiline}}
 {{/project.aliases}}
+{{#project.profiles}}
 
-{{#project.profiles}}  :profiles {{{project.profiles}}}{{/project.profiles}})
+  :profiles {{{project.profiles}}}
+{{/project.profiles}})
