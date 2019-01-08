@@ -1,6 +1,7 @@
 (ns leiningen.new.ratatouille
   (:require [clojure.string :as str]
             [clj-time.core :as t]
+            [leiningen.core.eval :as eval]
             [leiningen.core.main :as main]
             [leiningen.new.stencil-util :as stencil-util]
             [leiningen.new.templates :refer [->files
@@ -334,4 +335,13 @@
     (apply ->files
            (assoc context
              :name (-> context :project :name))
-           files)))
+           files)
+
+    (when (contains? tags :git)
+      (binding [eval/*dir* (-> context :project :name)]
+        (eval/sh-with-exit-code "Couldn't create git repo"
+                                "git" "init")
+        (eval/sh-with-exit-code "Couldn't add files to the repo"
+                                "git" "add" ".")
+        (eval/sh-with-exit-code "Couldn't make the initial commit"
+                                "git" "commit" "-a" "-m" "\"Initial commit, only the code from the template.\"")))))
