@@ -293,8 +293,10 @@
                                    [k (ctx-merge (val1 k) v)]))
                             val2))
 
-                  (vector? val1)
-                  (do (assert (vector? val2) (prn-str val2))
+                  (coll? val1)
+                  (do (assert (and (coll? val2)
+                                   (not (map? val2)))
+                              (prn-str val2))
                       (into val1 val2))
 
                   :else val2))]
@@ -302,15 +304,20 @@
 
 (defn make-context [project-name tags]
   (let [project-ns (sanitize-ns project-name)
+        dep-comparator (fn [[x _] [y _]]
+                         (compare (name x) (name y)))
         configs (into [stencil-util/context
                        {:tag (coll->map tags)}
                        {:project {:name project-name
                                   :year (t/year (t/now))
                                   :ns {:name project-ns
-                                       :path (name-to-path project-ns)}}}]
+                                       :path (name-to-path project-ns)}
+                                  :dependencies (sorted-set-by dep-comparator)}}]
                       (map (comp :context tag-by-keyword))
-                      tags)]
-    (reduce context-merge {} configs)))
+                      tags)
+        config (reduce context-merge {} configs)]
+    (-> config
+        (update-in [:project :dependencies] #(into [] %)))))
 
 ;(make-context "patate" [:clojurescript :reagent :garden])
 
