@@ -74,9 +74,7 @@
                         (let [namespace (str project-ns ".core")]
                           {:path (str "cljs/" (name-to-path namespace) ".cljs")
                            :ns {:name namespace
-                                :meta {:figwheel-hooks true}}}))}
-              :user {:clj {:ns {:require '[{:ns figwheel.main.api
-                                            :as fig}]}}}}}
+                                :meta {:figwheel-hooks true}}}))}}}
 
    {:keyword :ancient
     :names ["ancient"]
@@ -89,7 +87,7 @@
     :description "Uses Integrant."
     :dependencies [:clojure]
     :context {:project {:dependencies ((juxt :integrant :integrant-repl) latest-artifacts)}
-              :main {:clj {:ns {:require '[{:ns integrant.core
+              :user {:clj {:ns {:require '[{:ns integrant.core
                                             :as ig}
                                            {:ns integrant.repl
                                             :refer [clear go halt prep init reset reset-all]}]}}}}}
@@ -325,7 +323,7 @@
                 (when (contains? tags :readme)
                   (list ["README.md" (render "README.md" context)]))
                 (when (contains? tags :clojure)
-                  (list ["dev/user.clj" (render "dev/user.clj" context)]
+                  (list ["src/clj/user.clj" (render "src/clj/user.clj" context)]
                         ["src/{{main.clj.path}}" (render "src/clj/main.clj" context)]))
                 (when (contains? tags :integrant)
                   (list ["resources/clj-config.edn" (render "resources/clj-config.edn.tpl" context)]))
@@ -337,6 +335,7 @@
                         ["dev.cljs.edn" (render "dev.cljs.edn" context)]
                         ["resources/public/index.html" (render "resources/public/index.html" context)]
                         ["resources/public/css/style.css" (render "resources/public/css/style.css" context)]
+                        ["dev/fig-launcher.clj" (render "dev/fig-launcher.clj" context)]
                         ["src/{{main.cljs.path}}" (render "src/cljs/main.cljs" context)]))
                 (when (contains? tags :devcards)
                   (list ["devcards.cljs.edn" (render "devcards.cljs.edn" context)]
