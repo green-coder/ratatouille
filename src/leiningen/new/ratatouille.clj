@@ -1,5 +1,6 @@
 (ns leiningen.new.ratatouille
-  (:require [clj-time.core :as t]
+  (:require [clojure.string :as str]
+            [clj-time.core :as t]
             [leiningen.core.eval :as eval]
             [leiningen.core.main :as main]
             [leiningen.new.stencil-util :as stencil-util]
@@ -31,20 +32,26 @@
    :devcards '[devcards "0.2.6"]})
 
 (def all-tags
-  [{:keyword :git
-    :names ["git"]
-    :description "Uses git."
-    :dependencies []
-    :context {}}
-
-   {:keyword :readme
-    :names ["readme"]
+  [{:keyword :readme
+    :name "+readme"
     :description "Has a readme.md file."
     :dependencies []
     :context {}}
 
+   {:keyword :git
+    :name "+git"
+    :description "Uses git."
+    :dependencies []
+    :context {}}
+
+   {:keyword :ancient
+    :name "+ancient"
+    :description "Uses the lein-ancient plugin."
+    :dependencies []
+    :context {:project {:plugins ((juxt :ancient) latest-artifacts)}}}
+
    {:keyword :clojure
-    :names ["clojure" "clj"]
+    :name "+clj"
     :description "Uses Clojure."
     :dependencies []
     :context {:project {:source-paths ["src/clj"]
@@ -60,7 +67,7 @@
               :user {:clj {:ns {:name "user"}}}}}
 
    {:keyword :clojurescript
-    :names ["clojurescript" "cljs"]
+    :name "+cljs"
     :description "Uses Clojurescript via Figwheel Main."
     :dependencies []
     :context {:project {:source-paths ["src/cljs"]
@@ -78,14 +85,8 @@
                            :ns {:name namespace
                                 :meta {:figwheel-hooks true}}}))}}}
 
-   {:keyword :ancient
-    :names ["ancient"]
-    :description "Uses the lein-ancient plugin."
-    :dependencies []
-    :context {:project {:plugins ((juxt :ancient) latest-artifacts)}}}
-
    {:keyword :integrant
-    :names ["integrant"]
+    :name "+integrant"
     :description "Uses Integrant."
     :dependencies [:clojure]
     :context {:project {:dependencies ((juxt :integrant :integrant-repl) latest-artifacts)}
@@ -95,13 +96,13 @@
                                             :refer [clear go halt prep init reset reset-all]}]}}}}}
 
    {:keyword :http-kit
-    :names ["http-kit"]
+    :name "+http-kit"
     :description "Is included when no tags are specified, implies some commonly used tags for a Clojure project."
     :dependencies [:clojure :integrant]
     :context {:project {:dependencies ((juxt :http-kit :ring :ring-defaults) latest-artifacts)}}}
 
    {:keyword :rum
-    :names ["rum"]
+    :name "+rum"
     :description "Uses Rum."
     :dependencies [:clojurescript]
     :context {:project {:dependencies ((juxt :rum) latest-artifacts)}
@@ -111,7 +112,7 @@
                                              :as rum}]}}}}}
 
    {:keyword :reagent
-    :names ["reagent"]
+    :name "+reagent"
     :description "Uses Reagent."
     :dependencies [:clojurescript]
     :context {:project {:dependencies ((juxt :reagent) latest-artifacts)}
@@ -121,7 +122,7 @@
                                              :as ra}]}}}}}
 
    {:keyword :re-frame
-    :names ["re-frame"]
+    :name "+re-frame"
     :description "Uses Re-frame."
     :dependencies [:clojurescript]
     :context {:project {:dependencies ((juxt :re-frame) latest-artifacts)}
@@ -133,8 +134,8 @@
                                              :as rf}]}}}}}
 
    {:keyword :garden
-    :names ["garden"]
-    :description "Uses garden."
+    :name "+garden"
+    :description "Uses Garden."
     :dependencies [:clojurescript]
     :context {:project {:dependencies ((juxt :garden) latest-artifacts)}
               :main {:cljs {:ns {:require '[{:ns goog.style
@@ -143,7 +144,7 @@
                                              :as gd}]}}}}}
 
    {:keyword :devcards
-    :names ["devcards"]
+    :name "+devcards"
     :description "Uses Devcards for developing UI components in isolation from the rest of the app."
     :dependencies [:clojurescript]
     :context {:project {:dependencies ((juxt :devcards) latest-artifacts)
@@ -173,24 +174,13 @@
                                                                            'defcard-rg)])}
                                                           (when (-> ctx :tag :rum)
                                                             '{:ns sablono.core
-                                                              :as sab})])}})}}}
+                                                              :as sab})])}})}}}])
 
    ;{:keyword :sente
-   ; :names ["sente"]
+   ; :name "+sente"
    ; :description "Uses Sente for real time communication between front end and back end."
    ; :dependencies [:clojure :clojurescript]
    ; :context {}}
-
-   {:keyword :default
-    :names ["default"]
-    :description "Is included when no tags are specified, implies some commonly used tags for a Clojure project."
-    :dependencies [:git :readme :clojure]
-    :context {}}])
-
-
-(defn unknown-tag [option]
-  {:names [option]
-   :description "[Unknown tag]"})
 
 
 (def tag-by-keyword
@@ -200,50 +190,45 @@
 
 (def tag-by-name
   (into {}
-        (mapcat (fn [tag]
-                  (map (fn [name] [name tag])
-                       (:names tag))))
+        (map (juxt :name identity))
         all-tags))
 
-(defn print-tag-help! [tag]
-  (main/info (format "%s:\n  %s\n"
-                     (pr-str (let [names (:names tag)]
-                                (if (= (count names) 1)
-                                  (first names)
-                                  names)))
-                     (:description tag))))
+(defn print-help-message []
+  (let [options-str (str/join "\n" (mapv (fn [tag]
+                                           (format "  %-11s %s"
+                                                   (str (:name tag) ":")
+                                                   (:description tag)))
+                                       all-tags))]
+    (-> (format "Usage:
+  lein new ratatouille <project-name> <option>+
 
-;(print-tag-help! (:clojure tag-by-keyword))
-;(print-tag-help! (:git tag-by-keyword))
+Options available:
+%s
+
+Example:
+  lein new ratatouille my-app +readme +git +ancient +http-kit +rum +garden +devcards"
+                options-str)
+        main/info)))
 
 (defn parse-options
   "Returns a set of tags or nil, eventually prints an error or help message."
   [project-name options]
   (cond
-    ;; If the user wants to display some help messages.
-    (= project-name "help")
-    (cond
-      (empty? options)
-      (doseq [tag all-tags]
-        (print-tag-help! tag))
-
-      :else
-      (doseq [option options]
-        (-> (tag-by-name option (unknown-tag option))
-            print-tag-help!)))
+    ;; If the user wants to display the help message.
+    (empty? options)
+    (print-help-message)
 
     ;; Sanity check on all the options.
     (not-every? #(contains? tag-by-name %) options)
     (doseq [option options]
       (when-not (contains? tag-by-name option)
-        (main/info (str "Option not supported: " option))))
+        (main/info (format "Option not supported: %s\n" option))))
 
     ;; Normal use case.
     :else
-    (let [;; Use default tags if no options are provided.
-          options (or options ["default"])
-
-          requested-tags (into #{} (map (comp :keyword tag-by-name)) options)
+    (let [requested-tags (into #{}
+                               (map (comp :keyword tag-by-name))
+                               options)
 
           required-tags (into #{}
                               (mapcat (fn [tag]
@@ -268,21 +253,36 @@
 
 (def render (renderer "ratatouille"))
 
-(defn coll->map [coll]
-  (into {} (map (fn [k] [k true])) coll))
+(defn coll->true-map [coll]
+  (into {}
+        (map (fn [k] [k true]))
+        coll))
 
 
-(defn context-merge [prev-ctx next-ctx]
-  (letfn [(walk [f val]
-            (cond (map? val) (into {} (map (fn [[k v]] [k (walk f v)])) val)
-                  (coll? val) (into (empty val) (map (fn [x] (walk f x))) val)
+(defn context-merge
+  "Custom deep merge of 2 contexts."
+  [prev-ctx next-ctx]
+  (letfn [;; Walk in the data structure and apply f here and there.
+          (walk [f val]
+            (cond (map? val) (into {}
+                                   (map (fn [[k v]]
+                                          [k (walk f v)]))
+                                   val)
+                  (coll? val) (into (empty val)
+                                    (map (fn [x]
+                                           (walk f x)))
+                                    val)
                   :else (f val)))
+
+          ;; Handle the case of function annotated with meta ^:ctx
           (apply-to-context [x]
             (if (fn? x)
               (if-let [ctx-meta (:ctx (meta x))]
                 (x (get-in prev-ctx (if (true? ctx-meta) [] ctx-meta)))
                 x)
               x))
+
+          ;; Custom deep merge of contexts
           (ctx-merge [val1 val2]
             (cond (nil? val1) val2
 
@@ -304,10 +304,10 @@
 
 (defn make-context [project-name tags]
   (let [project-ns (sanitize-ns project-name)
-        dep-comparator (fn [[x _] [y _]]
+        dep-comparator (fn [[x _] [y _]] ; orders the dependencies by their unqualified names
                          (compare (name x) (name y)))
         configs (into [stencil-util/context
-                       {:tag (coll->map tags)}
+                       {:tag (coll->true-map tags)}
                        {:project {:name project-name
                                   :year (t/year (t/now))
                                   :ns {:name project-ns

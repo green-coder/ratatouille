@@ -4,37 +4,42 @@
 
 A Leiningen template which is using a small selection of the most awesome libraries available in the Clojure eco-system.
 
-Current template's options, and the setup they provide:
+Options available:
 
-- `git`: Git
-- `readme`: Readme file
-- `clj`: Clojure project
-- `cljs`: Clojurescript project (auto-reload workflow via Figwheel Main)
-- `garden`: Garden
-- `rum`: Rum
-- `reagent`: Reagent
-- `re-frame`: Re-frame
-- `devcards`: Devcards
+- `+readme`:    Has a readme.md file.
+- `+git`:       Uses Git.
+- `+ancient`:   Uses the lein-ancient plugin.
+- `+clj:`       Uses Clojure.
+- `+cljs`:      Uses Clojurescript via Figwheel Main.
+- `+integrant`: Uses Integrant.
+- `+http-kit`:  Is included when no tags are specified, implies some commonly used tags for a Clojure project.
+- `+rum`:       Uses Rum.
+- `+reagent`:   Uses Reagent.
+- `+re-frame`:  Uses Re-frame.
+- `+garden`:    Uses Garden.
+- `+devcards`:  Uses Devcards for developing UI components in isolation from the rest of the app.
 
 When no options are provided by the user, the template prepares a plain Clojure project.
 
 ## Usage
 
 ```shell
-lein new ratatouille <your-app-name> --snapshot -- [...options]
+lein new ratatouille <project-name> [option]+
 ```
 
-To see all the options:
+To display the helg message and the list of available options,
+leave the options empty.
 
 ```shell
-lein new ratatouille help  --snapshot
-lein new ratatouille help  --snapshot -- [...options]
+lein new ratatouille <project-name>
 ```
 
-To create a project `my-app` which uses `git` and `re-frame`:
+## Example
+
+To create a project `my-app` which uses `git` and `rum`:
 
 ```shell
-lein new ratatouille my-app --snapshot -- git re-frame
+lein new ratatouille my-app +git +rum
 ```
 
 ## License
