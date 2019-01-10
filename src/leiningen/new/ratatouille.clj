@@ -21,6 +21,7 @@
    :ancient '[lein-ancient "0.6.15"]
    :integrant '[integrant "0.7.0"]
    :integrant-repl '[integrant/repl "0.3.1"]
+   :http-kit '[http-kit "2.3.0"]
    :rum '[rum "0.11.3"]
    :reagent '[reagent "0.8.1"]
    :re-frame '[re-frame "0.10.6"]
@@ -88,10 +89,16 @@
     :description "Uses Integrant."
     :dependencies [:clojure]
     :context {:project {:dependencies ((juxt :integrant :integrant-repl) latest-artifacts)}
-              :user {:clj {:ns {:require '[{:ns integrant.core
+              :main {:clj {:ns {:require '[{:ns integrant.core
                                             :as ig}
                                            {:ns integrant.repl
                                             :refer [clear go halt prep init reset reset-all]}]}}}}}
+
+   {:keyword :http-kit
+    :names ["http-kit"]
+    :description "Is included when no tags are specified, implies some commonly used tags for a Clojure project."
+    :dependencies [:clojure :integrant]
+    :context {:project {:dependencies ((juxt :http-kit) latest-artifacts)}}}
 
    {:keyword :rum
     :names ["rum"]
@@ -320,6 +327,11 @@
                 (when (contains? tags :clojure)
                   (list ["dev/user.clj" (render "dev/user.clj" context)]
                         ["src/{{main.clj.path}}" (render "src/clj/main.clj" context)]))
+                (when (contains? tags :integrant)
+                  (list ["resources/clj-config.edn" (render "resources/clj-config.edn.tpl" context)]))
+                (when (contains? tags :http-kit)
+                  (list ["src/clj/{{project.ns.path}}/ig/ring_handler.clj" (render "src/clj/ig/ring_handler.clj" context)]
+                        ["src/clj/{{project.ns.path}}/ig/http_kit.clj" (render "src/clj/ig/http_kit.clj" context)]))
                 (when (contains? tags :clojurescript)
                   (list ["figwheel-main.edn" (render "figwheel-main.edn" context)]
                         ["dev.cljs.edn" (render "dev.cljs.edn" context)]
