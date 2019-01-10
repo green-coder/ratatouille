@@ -11,4 +11,4 @@ pom.xml.asc
 *.iml
 
 # The name of the project I use when testing the template.
-/patate
+/patate*

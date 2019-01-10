@@ -1,6 +1,5 @@
 (ns leiningen.new.ratatouille
-  (:require [clojure.string :as str]
-            [clj-time.core :as t]
+  (:require [clj-time.core :as t]
             [leiningen.core.eval :as eval]
             [leiningen.core.main :as main]
             [leiningen.new.stencil-util :as stencil-util]
@@ -49,12 +48,12 @@
                         :dependencies ((juxt :clojure) latest-artifacts)
                         :profiles {:uberjar {:aot :all}}}
               :main {:clj
-                     ^:ctx (fn [ctx]
-                             (let [project-ns (get-in ctx [:project :ns])
-                                   path (name-to-path project-ns)]
-                               {:path (str "clj/" path ".clj")
-                                :ns {:name project-ns
-                                     :gen-class true}}))}
+                     ^{:ctx [:project :ns :name]}
+                     (fn [project-ns]
+                       (let [namespace (str project-ns ".core")]
+                         {:path (str "clj/" (name-to-path namespace) ".clj")
+                          :ns {:name namespace
+                               :gen-class true}}))}
               :user {:clj {:ns {:name "user"}}}}}
 
    {:keyword :clojurescript
@@ -69,12 +68,12 @@
                                   ;"fig:test"  ["run" "-m" "figwheel.main" "-co" "test.cljs.edn" "-m" hello-world.test-runner]}
                         :profiles {:dev {:dependencies ((juxt :figwheel-main :rebel-readline-cljs) latest-artifacts)}}}
               :main {:cljs
-                     ^:ctx (fn [ctx]
-                             (let [project-ns (get-in ctx [:project :ns])
-                                   path (name-to-path project-ns)]
-                               {:path (str "cljs/" path ".cljs")
-                                :ns {:name project-ns
-                                     :meta {:figwheel-hooks true}}}))}
+                     ^{:ctx [:project :ns :name]}
+                      (fn [project-ns]
+                        (let [namespace (str project-ns ".core")]
+                          {:path (str "cljs/" (name-to-path namespace) ".cljs")
+                           :ns {:name namespace
+                                :meta {:figwheel-hooks true}}}))}
               :user {:clj {:ns {:require '[{:ns figwheel.main.api
                                             :as fig}]}}}}}
 
@@ -142,17 +141,16 @@
     :dependencies [:clojurescript]
     :context {:project {:dependencies ((juxt :devcards) latest-artifacts)
                         :aliases {"fig:devcards" ["trampoline" "run" "-m" "figwheel.main" "-b" "devcards"]}}
-              :devcards {:cljs ^:ctx (fn [ctx]
-                                       (let [project-ns (get-in ctx [:project :ns-parts])
-                                             namespace (->> (conj (pop project-ns) "devcards")
-                                                            (str/join "."))
-                                             path (name-to-path namespace)]
-                                         {:path (str "cljs/" path ".cljs")
-                                          :ns {:name namespace
-                                               :require [{:ns (-> ctx :project :ns)}]
-                                               :require-macros '[{:ns devcards.core
-                                                                  :as dc
-                                                                  :refer [defcard]}]}}))}
+              :devcards {:cljs
+                         ^{:ctx [:project :ns :name]}
+                          (fn [project-ns]
+                            (let [namespace (str project-ns ".devcards")]
+                              {:path (str "cljs/" (name-to-path namespace) ".cljs")
+                               :ns {:name namespace
+                                    :require [{:ns (str project-ns ".core")}]
+                                    :require-macros '[{:ns devcards.core
+                                                       :as dc
+                                                       :refer [defcard]}]}}))}
               :main {:cljs
                      ^:ctx (fn [ctx]
                              {:ns {:require '[{:ns devcards.core}]
@@ -296,13 +294,13 @@
     (ctx-merge prev-ctx (walk apply-to-context next-ctx))))
 
 (defn make-context [project-name tags]
-  (let [project-ns (multi-segment (sanitize-ns project-name))
+  (let [project-ns (sanitize-ns project-name)
         configs (into [stencil-util/context
                        {:tag (coll->map tags)}
                        {:project {:name project-name
                                   :year (t/year (t/now))
-                                  :ns project-ns
-                                  :ns-parts (str/split project-ns #"\.")}}]
+                                  :ns {:name project-ns
+                                       :path (name-to-path project-ns)}}}]
                       (map (comp :context tag-by-keyword))
                       tags)]
     (reduce context-merge {} configs)))
