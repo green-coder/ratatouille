@@ -21,6 +21,8 @@
    :ancient '[lein-ancient "0.6.15"]
    :integrant '[integrant "0.7.0"]
    :integrant-repl '[integrant/repl "0.3.1"]
+   :ring '[ring "1.7.1"]
+   :ring-defaults '[ring/ring-defaults "0.3.2"]
    :http-kit '[http-kit "2.3.0"]
    :rum '[rum "0.11.3"]
    :reagent '[reagent "0.8.1"]
@@ -96,7 +98,7 @@
     :names ["http-kit"]
     :description "Is included when no tags are specified, implies some commonly used tags for a Clojure project."
     :dependencies [:clojure :integrant]
-    :context {:project {:dependencies ((juxt :http-kit) latest-artifacts)}}}
+    :context {:project {:dependencies ((juxt :http-kit :ring :ring-defaults) latest-artifacts)}}}
 
    {:keyword :rum
     :names ["rum"]
