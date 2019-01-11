@@ -41,7 +41,7 @@
 
    {:keyword :git
     :name "+git"
-    :description "Uses git."
+    :description "Uses git, makes an initial commit."
     :dependencies []
     :context {}}
 
@@ -98,7 +98,7 @@
 
    {:keyword :http-kit
     :name "+http-kit"
-    :description "Is included when no tags are specified, implies some commonly used tags for a Clojure project."
+    :description "Uses Http-kit with Ring and some middlewares."
     :dependencies [:clojure :integrant]
     :context {:project {:dependencies ((juxt :http-kit :ring :ring-defaults) latest-artifacts)}}}
 
@@ -136,7 +136,7 @@
 
    {:keyword :garden
     :name "+garden"
-    :description "Uses Garden."
+    :description "Uses Garden, dynamically injects CSS from front end code."
     :dependencies [:clojurescript]
     :context {:project {:dependencies ((juxt :garden) latest-artifacts)}
               :main {:cljs {:ns {:require '[{:ns goog.style

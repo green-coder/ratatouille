@@ -7,19 +7,22 @@ A Leiningen template which is using a small selection of the most awesome librar
 Options available:
 
 - `+readme`:    Has a readme.md file.
-- `+git`:       Uses Git.
+- `+git`:       Uses Git, makes an initial commit.
 - `+ancient`:   Uses the lein-ancient plugin.
-- `+clj:`       Uses Clojure.
+- `+clj`:       Uses Clojure.
 - `+cljs`:      Uses Clojurescript via Figwheel Main.
 - `+integrant`: Uses Integrant.
-- `+http-kit`:  Is included when no tags are specified, implies some commonly used tags for a Clojure project.
+- `+http-kit`:  Uses Http-kit with Ring and some middlewares.
 - `+rum`:       Uses Rum.
 - `+reagent`:   Uses Reagent.
 - `+re-frame`:  Uses Re-frame.
-- `+garden`:    Uses Garden.
+- `+garden`:    Uses Garden, dynamically injects CSS from front end code.
 - `+devcards`:  Uses Devcards for developing UI components in isolation from the rest of the app.
 
-When no options are provided by the user, the template prepares a plain Clojure project.
+Depending on what the user chooses, some options will be implicitly included. For instance:
+
+- using `+rum` will include `+cljs`,
+- using `+http-kit` will include `+integrant` and `+clj`.
 
 ## Usage
 
