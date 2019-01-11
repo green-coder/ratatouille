@@ -312,12 +312,14 @@ Example:
                                   :year (t/year (t/now))
                                   :ns {:name project-ns
                                        :path (name-to-path project-ns)}
-                                  :dependencies (sorted-set-by dep-comparator)}}]
+                                  :dependencies (sorted-set-by dep-comparator)
+                                  :plugins (sorted-set-by dep-comparator)}}]
                       (map (comp :context tag-by-keyword))
                       tags)
         config (reduce context-merge {} configs)]
     (-> config
-        (update-in [:project :dependencies] #(into [] %)))))
+        (update-in [:project :dependencies] #(into [] %))
+        (update-in [:project :plugins] #(into [] %)))))
 
 ;(make-context "patate" [:clojurescript :reagent :garden])
 
