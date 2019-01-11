@@ -1,17 +1,18 @@
 (ns leiningen.new.ratatouille
-  (:require [clojure.string :as str]
+  (:require [clojure.java.io :as io]
+            [clojure.string :as str]
             [clj-time.core :as t]
             [leiningen.core.eval :as eval]
             [leiningen.core.main :as main]
-            [leiningen.new.stencil-util :as stencil-util]
+            [leiningen.new.selmer-util :as util]
             [leiningen.new.templates :refer [->files
                                              name-to-path
                                              multi-segment
                                              project-name
-                                             render-text
-                                             renderer
                                              sanitize-ns
-                                             slurp-resource]]))
+                                             slurp-resource]]
+            [selmer.filters :as filters]
+            [selmer.parser :as parser :refer [render-file]]))
 
 ;; All the artifacts that Ratatouille is going to use are grouped here, making it easier to check for obsolescence.
 (def latest-artifacts
@@ -251,8 +252,6 @@ Example:
 
       (tag-sorted-into (sorted-set) required-tags))))
 
-(def render (renderer "ratatouille"))
-
 (defn coll->true-map [coll]
   (into {}
         (map (fn [k] [k true]))
@@ -306,8 +305,7 @@ Example:
   (let [project-ns (sanitize-ns project-name)
         dep-comparator (fn [[x _] [y _]] ; orders the dependencies by their unqualified names
                          (compare (name x) (name y)))
-        configs (into [stencil-util/context
-                       {:tag (coll->true-map tags)}
+        configs (into [{:tag (coll->true-map tags)}
                        {:project {:name project-name
                                   :year (t/year (t/now))
                                   :ns {:name project-ns
@@ -323,35 +321,47 @@ Example:
 
 ;(make-context "patate" [:clojurescript :reagent :garden])
 
+
+;; Register the template files location in Selmer.
+(parser/set-resource-path! (io/resource "leiningen/new/ratatouille/"))
+
+;; Register some custom filters in Selmer.
+(filters/add-filter! :multi-line util/multi-line)
+(filters/add-filter! :clj-ns util/clj-ns)
+
+(def square-bracket-delimiters
+  {:tag-open \[
+   :tag-close \]})
+
 (defn ratatouille [project-name & options]
   (let [tags (or (parse-options project-name options)
                  (main/exit 0 "No files were created."))
         context (make-context project-name tags)
         files (concat
-                (list ["project.clj" (render "project.clj" context)])
+                (list ["project.clj" (render-file "project.clj" context)])
                 (when (contains? tags :git)
-                  (list [".gitignore" (render ".gitignore" context)]))
+                  (list [".gitignore" (render-file ".gitignore" context)]))
                 (when (contains? tags :readme)
-                  (list ["README.md" (render "README.md" context)]))
+                  (list ["README.md" (render-file "README.md" context)]))
                 (when (contains? tags :clojure)
-                  (list ["src/clj/user.clj" (render "src/clj/user.clj" context)]
-                        ["src/{{main.clj.path}}" (render "src/clj/main.clj" context)]))
+                  (list ["src/clj/user.clj" (render-file "src/clj/user.clj" context)]
+                        ["src/{{main.clj.path}}" (render-file "src/clj/main.clj" context)]))
                 (when (contains? tags :integrant)
-                  (list ["resources/clj-config.edn" (render "resources/clj-config.edn.tpl" context)]))
+                  (list ["resources/clj-config.edn" (render-file "resources/clj-config.edn" context square-bracket-delimiters)]))
                 (when (contains? tags :http-kit)
-                  (list ["src/clj/{{project.ns.path}}/ig/ring_handler.clj" (render "src/clj/ig/ring_handler.clj" context)]
-                        ["src/clj/{{project.ns.path}}/ig/http_kit.clj" (render "src/clj/ig/http_kit.clj" context)]))
+                  (list ["src/clj/{{project.ns.path}}/ig/ring_handler.clj" (render-file "src/clj/ig/ring_handler.clj" context)]
+                        ["src/clj/{{project.ns.path}}/ig/http_kit.clj" (render-file "src/clj/ig/http_kit.clj" context)]))
                 (when (contains? tags :clojurescript)
-                  (list ["figwheel-main.edn" (render "figwheel-main.edn" context)]
-                        ["dev.cljs.edn" (render "dev.cljs.edn" context)]
-                        ["resources/public/index.html" (render "resources/public/index.html" context)]
-                        ["resources/public/css/style.css" (render "resources/public/css/style.css" context)]
-                        ["dev/fig-launcher.clj" (render "dev/fig-launcher.clj" context)]
-                        ["src/{{main.cljs.path}}" (render "src/cljs/main.cljs" context)]))
+                  (list ["figwheel-main.edn" (render-file "figwheel-main.edn" context)]
+                        ["dev.cljs.edn" (render-file "dev.cljs.edn" context)]
+                        ["resources/public/index.html" (render-file "resources/public/index.html" context)]
+                        ["resources/public/css/style.css" (render-file "resources/public/css/style.css" context)]
+                        ["dev/fig-launcher.clj" (render-file "dev/fig-launcher.clj" context)]
+                        ["src/{{main.cljs.path}}" (render-file "src/cljs/main.cljs" context)]))
                 (when (contains? tags :devcards)
-                  (list ["devcards.cljs.edn" (render "devcards.cljs.edn" context)]
-                        ["resources/public/devcards.html" (render "resources/public/devcards.html" context)]
-                        ["src/{{devcards.cljs.path}}" (render "src/cljs/devcards.cljs" context)])))]
+                  (list ["devcards.cljs.edn" (render-file "devcards.cljs.edn" context)]
+                        ["resources/public/devcards.html" (render-file "resources/public/devcards.html" context)]
+                        ["src/{{devcards.cljs.path}}" (render-file "src/cljs/devcards.cljs" context)])))]
     (apply ->files
            (assoc context
              :name (-> context :project :name))

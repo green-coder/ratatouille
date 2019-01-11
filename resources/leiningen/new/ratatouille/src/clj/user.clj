@@ -1,9 +1,8 @@
-{{#clj.ns}}#ctx user.clj.ns{{/clj.ns}}
+{{user.clj.ns|clj-ns}}
 
 (prn "src/clj/user.clj is running.")
 
-{{#tag.integrant}}
-(defn load-config []
+{% if tag.integrant %}(defn load-config []
   (-> "clj-config.edn"
       clojure.java.io/resource
       slurp
@@ -22,5 +21,4 @@
   (halt)
   (reset) ; halts the system, reloads the source files, then restarts the system.
   _)
-
-{{/tag.integrant}}
+{% endif %}

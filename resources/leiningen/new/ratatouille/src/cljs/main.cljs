@@ -1,15 +1,13 @@
-{{#clj.ns}}#ctx main.cljs.ns{{/clj.ns}}
+{{main.cljs.ns|clj-ns}}
 
 ;; Prints something in the browser's console.
 (enable-console-print!)
 (println "Hello, world from Clojurescript!")
 
-{{#tag.garden}}
-;; Install some CSS style in the browser, dynamically.
+{% if tag.garden %};; Install some CSS style in the browser, dynamically.
 (gs/installStyles (gd/css [:body {:background "#c0c0c0"}]))
 
-{{/tag.garden}}
-{{#tag.devcards}}
+{% endif %}{% if tag.devcards %}
 ;; Defines a card.
 (defcard my-data-card
   "The card's description."
@@ -17,8 +15,7 @@
    #{1 2 3 4 5}
    {:a 0 :b 1 :c 2 :d 3 :e 4}])
 
-{{/tag.devcards}}
-{{#tag.rum}}
+{% endif %}{% if tag.rum %}
 ;; State of the counter
 (defonce counter-state (atom 0))
 
@@ -27,18 +24,16 @@
   [:div {:on-click (fn [_] (swap! counter-state inc))}
         "Clicks: " (rum/react counter-state)])
 
-{{#tag.devcards}}
-;; A devcard, to test the component above.
+{% if tag.devcards %};; A devcard, to test the component above.
 (defcard my-rum-card
   "The card's description."
   (sab/html (counter)))
 
-{{/tag.devcards}}
-(defn mount-app-element []
+{% endif %}(defn mount-app-element []
   (when-let [app-element (gdom/getElement "app")]
     (rum/mount (counter) app-element)))
 
- ;; Reload hook, specified with the ^:after-load metadata.
+;; Reload hook, specified with the ^:after-load metadata.
 (defn ^:after-load on-reload []
   (mount-app-element))
 
@@ -46,8 +41,7 @@
 (defonce ^:private first-run
   (do (mount-app-element) nil))
 
-{{/tag.rum}}
-{{#tag.reagent}}
+{% endif %}{% if tag.reagent %}
 ;; State of the Reagent app.
 (defonce app-state
   (ra/atom {:text "Hello world from Reagent!"
@@ -60,8 +54,7 @@
    [:button {:on-click #(swap! ratom update-in [:counter] inc)}
             "+1"]])
 
-{{#tag.devcards}}
-;; A devcard, to test the component above.
+{% if tag.devcards %};; A devcard, to test the component above.
 (defcard-rg my-reagent-card
   "The card's description."
   (fn [ratom-data owner]
@@ -70,8 +63,7 @@
   {:inspect-data true
    :history true})
 
-{{/tag.devcards}}
-(defn root-view-component []
+{% endif %}(defn root-view-component []
   [:div
    [:h1 (:text @app-state)]
    [counter app-state]
@@ -81,7 +73,7 @@
   (when-let [app-element (gdom/getElement "app")]
     (ra/render-component [root-view-component] app-element)))
 
- ;; Reload hook, specified with the ^:after-load metadata.
+;; Reload hook, specified with the ^:after-load metadata.
 (defn ^:after-load on-reload []
   (mount-app-element)
   ;; Optionally touch your app-state to force a re-rendering, depending on your application's needs.
@@ -91,8 +83,7 @@
 (defonce ^:private first-run
   (do (mount-app-element) nil))
 
-{{/tag.reagent}}
-{{#tag.re-frame}}
+{% endif %}{% if tag.re-frame %}
 ;; The initial state of the app.
 (def initial-db
   {:text "Hello world from Reagent!"
@@ -149,4 +140,4 @@
     (mount-app-element)
     nil))
 
-{{/tag.re-frame}}
+{% endif %}

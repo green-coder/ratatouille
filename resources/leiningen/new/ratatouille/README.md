@@ -1,11 +1,10 @@
-# {{#str.cap}}{{project.name}}{{/str.cap}}
+# {{project.name|capitalize}}
 
 FIXME: description
 
 ## Usage
 
-{{#tag.clojure}}
-### Clojure
+{% if tag.clojure %}### Clojure
 
 To run the Clojure project:
 
@@ -19,9 +18,7 @@ To launch the Clojure program and connect to it via a REPL:
 lein repl
 ```
 
-{{/tag.clojure}}
-{{#tag.clojurescript}}
-### Clojurescript
+{% endif %}{% if tag.clojurescript %}### Clojurescript
 
 We use Figwheel Main for running Clojurescript during development.
 More information can be found at https://figwheel.org/
@@ -35,8 +32,7 @@ lein fig:dev
 A webpage to your app will open in a browser, and your clojurescript
 program will be reloaded each time you modify its source code.
 
-{{/tag.clojurescript}}
-FIXME: more explanation
+{% endif %}FIXME: more explanation
 
 ## Contribute
 

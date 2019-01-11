@@ -3,28 +3,18 @@
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-
   :min-lein-version "2.8.1"
 
-{{#main.clj.ns}}
-  :main ^:skip-aot {{name}}
+{% if main.clj.ns %}  :main ^:skip-aot {{main.clj.ns.name}}
 
-{{/main.clj.ns}}
-  :source-paths {{{project.source-paths}}}
+{% endif %}  :source-paths {{project.source-paths|safe}}
   :resource-paths ["resources" "target"]
   :target-path "target/%s"
 
-  :dependencies {{#str.multiline}}16 #ctx project.dependencies{{/str.multiline}}
+{% if project.dependencies %}  :dependencies {{project.dependencies|multi-line:16|safe}}
 
-{{#project.plugins}}
-  :plugins {{#str.multiline}}11 #ctx .{{/str.multiline}}
+{% endif %}{% if project.plugins %}  :plugins {{project.plugins|multi-line:11|safe}}
 
-{{/project.plugins}}
-{{#project.aliases}}
-  :aliases {{#str.multiline}}11 #ctx .{{/str.multiline}}
+{% endif %}{% if project.aliases %}  :aliases {{project.aliases|multi-line:11|safe}}
 
-{{/project.aliases}}
-{{#project.profiles}}
-  :profiles {{{project.profiles}}}
-
-{{/project.profiles}})
+{% endif %}{% if project.profiles %}  :profiles {{project.profiles|multi-line:12|safe}}{% endif %})
