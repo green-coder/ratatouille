@@ -23,7 +23,7 @@
    :ancient '[lein-ancient "0.6.15"]
    :integrant '[integrant "0.7.0"]
    :integrant-repl '[integrant/repl "0.3.1"]
-   :ring '[ring "1.7.1"]
+   :ring-core '[ring/ring-core "1.7.1"]
    :ring-defaults '[ring/ring-defaults "0.3.2"]
    :http-kit '[http-kit "2.3.0"]
    :rum '[rum "0.11.3"]
@@ -100,7 +100,7 @@
     :name "+http-kit"
     :description "Uses Http-kit with Ring and some middlewares."
     :dependencies [:clojure :integrant]
-    :context {:project {:dependencies ((juxt :http-kit :ring :ring-defaults) latest-artifacts)}}}
+    :context {:project {:dependencies ((juxt :http-kit :ring-core :ring-defaults) latest-artifacts)}}}
 
    {:keyword :rum
     :name "+rum"
