@@ -11,10 +11,10 @@
   :resource-paths ["resources" "target"]
   :target-path "target/%s"
 
-{% if project.dependencies %}  :dependencies {{project.dependencies|multi-line:16|safe}}
+{% if project.dependencies|not-empty %}  :dependencies {{project.dependencies|multi-line:16|safe}}
 
-{% endif %}{% if project.plugins %}  :plugins {{project.plugins|multi-line:11|safe}}
+{% endif %}{% if project.plugins|not-empty %}  :plugins {{project.plugins|multi-line:11|safe}}
 
-{% endif %}{% if project.aliases %}  :aliases {{project.aliases|multi-line:11|safe}}
+{% endif %}{% if project.aliases|not-empty %}  :aliases {{project.aliases|multi-line:11|safe}}
 
-{% endif %}{% if project.profiles %}  :profiles {{project.profiles|multi-line:12|safe}}{% endif %})
+{% endif %}{% if project.profiles|not-empty %}  :profiles {{project.profiles|multi-line:12|safe}}{% endif %})
