@@ -1,6 +1,6 @@
 {{user.clj.ns|clj-ns}}
 
-(prn "src/clj/user.clj is running.")
+(println "\"src/clj/user.clj\" is running.")
 
 {% if tag.integrant %}(defn load-config []
   (-> "clj-config.edn"
