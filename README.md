@@ -12,7 +12,8 @@ Options available:
 - `+clj`:       Uses Clojure.
 - `+cljs`:      Uses Clojurescript via Figwheel Main.
 - `+integrant`: Uses Integrant.
-- `+http-kit`:  Uses Http-kit with Ring and some middlewares.
+- `+http-kit`:  Uses Http-kit.
+- `+reitit`:    Uses Reitit.
 - `+rum`:       Uses Rum.
 - `+reagent`:   Uses Reagent.
 - `+re-frame`:  Uses Re-frame.
