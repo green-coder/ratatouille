@@ -27,6 +27,7 @@
    :ring-json '[ring/ring-json "0.4.0"]
    :ring-defaults '[ring/ring-defaults "0.3.2"]
    :http-kit '[http-kit "2.3.0"]
+   :reitit-core '[metosin/reitit-core "0.2.10"]
    :rum '[rum "0.11.3"]
    :reagent '[reagent "0.8.1"]
    :re-frame '[re-frame "0.10.6"]
@@ -108,6 +109,12 @@
     :description "Uses Http-kit."
     :dependencies [:ring :integrant]
     :context {:project {:dependencies ((juxt :http-kit) latest-artifacts)}}}
+
+   {:keyword :reitit
+    :name "+reitit"
+    :description "Uses Reitit."
+    :dependencies [:http-kit :ring]
+    :context {:project {:dependencies ((juxt :reitit-core) latest-artifacts)}}}
 
    {:keyword :rum
     :name "+rum"
@@ -340,6 +347,10 @@ Example:
   {:tag-open \[
    :tag-close \]})
 
+(def <>-delimiters
+  {:tag-open \<
+   :tag-close \>})
+
 (defn ratatouille [project-name & options]
   (let [tags (or (parse-options project-name options)
                  (main/exit 0 "No files were created."))
@@ -356,8 +367,10 @@ Example:
                 (when (contains? tags :integrant)
                   (list ["resources/clj-config.edn" (render-file "resources/clj-config.edn" context square-bracket-delimiters)]))
                 (when (contains? tags :http-kit)
-                  (list ["src/clj/{{project.ns.path}}/ig/ring_handler.clj" (render-file "src/clj/ig/ring_handler.clj" context)]
-                        ["src/clj/{{project.ns.path}}/ig/http_kit.clj" (render-file "src/clj/ig/http_kit.clj" context)]))
+                  (list ["src/clj/{{project.ns.path}}/ig/http_kit.clj" (render-file "src/clj/ig/http_kit.clj" context)]
+                        (if (contains? tags :reitit)
+                          ["src/clj/{{project.ns.path}}/ig/reitit.clj" (render-file "src/clj/ig/reitit.clj" context <>-delimiters)]
+                          ["src/clj/{{project.ns.path}}/ig/ring_handler.clj" (render-file "src/clj/ig/ring_handler.clj" context)])))
                 (when (contains? tags :clojurescript)
                   (list ["figwheel-main.edn" (render-file "figwheel-main.edn" context)]
                         ["dev.cljs.edn" (render-file "dev.cljs.edn" context)]

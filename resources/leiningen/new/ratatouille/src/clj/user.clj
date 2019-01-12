@@ -13,6 +13,8 @@
                               (ig/load-namespaces config)
                               (ig/prep config))))
 
+(go)
+
 (comment
   ;; integrant-repl commands
   (init)
