@@ -24,6 +24,7 @@
    :integrant '[integrant "0.7.0"]
    :integrant-repl '[integrant/repl "0.3.1"]
    :ring-core '[ring/ring-core "1.7.1"]
+   :ring-json '[ring/ring-json "0.4.0"]
    :ring-defaults '[ring/ring-defaults "0.3.2"]
    :http-kit '[http-kit "2.3.0"]
    :rum '[rum "0.11.3"]
@@ -96,11 +97,17 @@
                                            {:ns integrant.repl
                                             :refer [clear go halt prep init reset reset-all]}]}}}}}
 
+   {:keyword :ring
+    :name "+ring"
+    :description "Ring and some middlewares."
+    :dependencies [:clojure]
+    :context {:project {:dependencies ((juxt :ring-core :ring-json :ring-defaults) latest-artifacts)}}}
+
    {:keyword :http-kit
     :name "+http-kit"
-    :description "Uses Http-kit with Ring and some middlewares."
-    :dependencies [:clojure :integrant]
-    :context {:project {:dependencies ((juxt :http-kit :ring-core :ring-defaults) latest-artifacts)}}}
+    :description "Uses Http-kit."
+    :dependencies [:ring :integrant]
+    :context {:project {:dependencies ((juxt :http-kit) latest-artifacts)}}}
 
    {:keyword :rum
     :name "+rum"
