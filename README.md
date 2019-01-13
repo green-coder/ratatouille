@@ -27,6 +27,9 @@ Depending on what the user chooses, some options will be implicitly included. Fo
 
 ## Usage
 
+> **Note:** To use the snapshot version instead of a stable release, insert
+` --snapshot -- ` between the project name and the options.
+
 ```shell
 lein new ratatouille <project-name> [option]+
 ```
