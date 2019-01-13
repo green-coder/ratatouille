@@ -358,7 +358,7 @@ Example:
         files (concat
                 (list ["project.clj" (render-file "project.clj" context)])
                 (when (contains? tags :git)
-                  (list [".gitignore" (render-file ".gitignore" context)]))
+                  (list [".gitignore" (render-file "gitignore" context)]))
                 (when (contains? tags :readme)
                   (list ["README.md" (render-file "README.md" context)]))
                 (when (contains? tags :clojure)
