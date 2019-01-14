@@ -343,10 +343,6 @@ Example:
 (filters/add-filter! :multi-line util/multi-line)
 (filters/add-filter! :clj-ns util/clj-ns)
 
-(def square-bracket-delimiters
-  {:tag-open \[
-   :tag-close \]})
-
 (def <>-delimiters
   {:tag-open \<
    :tag-close \>})
@@ -365,7 +361,7 @@ Example:
                   (list ["src/clj/user.clj" (render-file "src/clj/user.clj" context)]
                         ["src/{{main.clj.path}}" (render-file "src/clj/main.clj" context)]))
                 (when (contains? tags :integrant)
-                  (list ["resources/clj-config.edn" (render-file "resources/clj-config.edn" context square-bracket-delimiters)]))
+                  (list ["resources/clj-config.edn" (render-file "resources/clj-config.edn" context <>-delimiters)]))
                 (when (contains? tags :http-kit)
                   (list ["src/clj/{{project.ns.path}}/ig/http_kit.clj" (render-file "src/clj/ig/http_kit.clj" context)]
                         (if (contains? tags :reitit)
@@ -394,4 +390,4 @@ Example:
         (eval/sh-with-exit-code "Couldn't add files to the repo"
                                 "git" "add" ".")
         (eval/sh-with-exit-code "Couldn't make the initial commit"
-                                "git" "commit" "-a" "-m" "\"Initial commit, only the code from the template.\"")))))
+                                "git" "commit" "-a" "-m" "Initial commit, only the code from the template.")))))
