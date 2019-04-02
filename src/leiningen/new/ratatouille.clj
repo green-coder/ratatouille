@@ -315,12 +315,13 @@ Example:
                   :else val2))]
     (ctx-merge prev-ctx (walk apply-to-context next-ctx))))
 
-(defn make-context [project-name tags]
+(defn make-context [project-name options tags]
   (let [project-ns (sanitize-ns project-name)
         dep-comparator (fn [[x _] [y _]] ; orders the dependencies by their unqualified names
                          (compare (name x) (name y)))
         configs (into [{:tag (coll->true-map tags)}
                        {:project {:name project-name
+                                  :options options
                                   :year (t/year (t/now))
                                   :ns {:name project-ns
                                        :path (name-to-path project-ns)}
@@ -350,7 +351,7 @@ Example:
 (defn ratatouille [project-name & options]
   (let [tags (or (parse-options project-name options)
                  (main/exit 0 "No files were created."))
-        context (make-context project-name tags)
+        context (make-context project-name options tags)
         files (concat
                 (list ["project.clj" (render-file "project.clj" context)])
                 (when (contains? tags :git)
