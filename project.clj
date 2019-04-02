@@ -1,4 +1,4 @@
-(defproject ratatouille/lein-template "0.0.1-SNAPSHOT"
+(defproject ratatouille/lein-template "0.1.0"
   :description "A leiningen template"
   :url "https://github.com/green-coder/ratatouille"
   :license {:name "Eclipse Public License"
