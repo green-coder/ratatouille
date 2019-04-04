@@ -11,192 +11,12 @@
                                              project-name
                                              sanitize-ns
                                              slurp-resource]]
+            [ratatouille.node.core :as node]
+            [ratatouille.node.latest-artifact :as latest-artifact]
             [selmer.filters :as filters]
             [selmer.parser :as parser :refer [render-file]]))
 
-;; All the artifacts that Ratatouille is going to use are grouped here, making it easier to check for obsolescence.
-(def latest-artifacts
-  {:clojure '[org.clojure/clojure "1.10.0"]
-   :clojurescript '[org.clojure/clojurescript "1.10.439"]
-   :figwheel-main '[com.bhauman/figwheel-main "0.1.9"]
-   :rebel-readline-cljs '[com.bhauman/rebel-readline-cljs "0.1.4"]
-   :ancient '[lein-ancient "0.6.15"]
-   :integrant '[integrant "0.7.0"]
-   :integrant-repl '[integrant/repl "0.3.1"]
-   :ring-core '[ring/ring-core "1.7.1"]
-   :ring-json '[ring/ring-json "0.4.0"]
-   :ring-defaults '[ring/ring-defaults "0.3.2"]
-   :http-kit '[http-kit "2.3.0"]
-   :reitit-core '[metosin/reitit-core "0.2.10"]
-   :rum '[rum "0.11.3"]
-   :reagent '[reagent "0.8.1"]
-   :re-frame '[re-frame "0.10.6"]
-   :garden '[garden "1.3.6"]
-   :devcards '[devcards "0.2.6"]})
-
-(def all-tags
-  [{:keyword :readme
-    :name "+readme"
-    :description "Has a readme.md file."
-    :dependencies []
-    :context {}}
-
-   {:keyword :git
-    :name "+git"
-    :description "Uses git, makes an initial commit."
-    :dependencies []
-    :context {}}
-
-   {:keyword :ancient
-    :name "+ancient"
-    :description "Uses the lein-ancient plugin."
-    :dependencies []
-    :context {:project {:plugins ((juxt :ancient) latest-artifacts)}}}
-
-   {:keyword :clojure
-    :name "+clj"
-    :description "Uses Clojure."
-    :dependencies []
-    :context {:project {:source-paths ["src/clj"]
-                        :dependencies ((juxt :clojure) latest-artifacts)
-                        :profiles {:uberjar {:aot :all}}}
-              :main {:clj
-                     ^{:ctx [:project :ns :name]}
-                     (fn [project-ns]
-                       (let [namespace (str project-ns ".core")]
-                         {:path (str "clj/" (name-to-path namespace) ".clj")
-                          :ns {:name namespace
-                               :gen-class true}}))}
-              :user {:clj {:ns {:name "user"}}}}}
-
-   {:keyword :clojurescript
-    :name "+cljs"
-    :description "Uses Clojurescript via Figwheel Main."
-    :dependencies []
-    :context {:project {:source-paths ["src/cljs"]
-                        :dependencies ((juxt :clojure :clojurescript) latest-artifacts)
-                        :aliases {"fig"       ["trampoline" "run" "-m" "figwheel.main"]
-                                  "fig:dev"   ["trampoline" "run" "-m" "figwheel.main" "-b" "dev" "-r"]
-                                  "fig:min"   ["run" "-m" "figwheel.main" "-O" "advanced" "-bo" "dev"]}
-                                  ;"fig:test"  ["run" "-m" "figwheel.main" "-co" "test.cljs.edn" "-m" hello-world.test-runner]}
-                        :profiles {:dev {:dependencies ((juxt :figwheel-main :rebel-readline-cljs) latest-artifacts)}}}
-              :main {:cljs
-                     ^{:ctx [:project :ns :name]}
-                      (fn [project-ns]
-                        (let [namespace (str project-ns ".core")]
-                          {:path (str "cljs/" (name-to-path namespace) ".cljs")
-                           :ns {:name namespace
-                                :meta {:figwheel-hooks true}}}))}}}
-
-   {:keyword :integrant
-    :name "+integrant"
-    :description "Uses Integrant."
-    :dependencies [:clojure]
-    :context {:project {:dependencies ((juxt :integrant :integrant-repl) latest-artifacts)}
-              :user {:clj {:ns {:require '[{:ns integrant.core
-                                            :as ig}
-                                           {:ns integrant.repl
-                                            :refer [clear go halt prep init reset reset-all]}]}}}}}
-
-   {:keyword :ring
-    :name "+ring"
-    :description "Ring and some middlewares."
-    :dependencies [:clojure]
-    :context {:project {:dependencies ((juxt :ring-core :ring-json :ring-defaults) latest-artifacts)}}}
-
-   {:keyword :http-kit
-    :name "+http-kit"
-    :description "Uses Http-kit."
-    :dependencies [:ring :integrant]
-    :context {:project {:dependencies ((juxt :http-kit) latest-artifacts)}}}
-
-   {:keyword :reitit
-    :name "+reitit"
-    :description "Uses Reitit."
-    :dependencies [:http-kit :ring]
-    :context {:project {:dependencies ((juxt :reitit-core) latest-artifacts)}}}
-
-   {:keyword :rum
-    :name "+rum"
-    :description "Uses Rum."
-    :dependencies [:clojurescript]
-    :context {:project {:dependencies ((juxt :rum) latest-artifacts)}
-              :main {:cljs {:ns {:require '[{:ns goog.dom
-                                             :as gdom}
-                                            {:ns rum.core
-                                             :as rum}]}}}}}
-
-   {:keyword :reagent
-    :name "+reagent"
-    :description "Uses Reagent."
-    :dependencies [:clojurescript]
-    :context {:project {:dependencies ((juxt :reagent) latest-artifacts)}
-              :main {:cljs {:ns {:require '[{:ns goog.dom
-                                             :as gdom}
-                                            {:ns reagent.core
-                                             :as ra}]}}}}}
-
-   {:keyword :re-frame
-    :name "+re-frame"
-    :description "Uses Re-frame."
-    :dependencies [:clojurescript]
-    :context {:project {:dependencies ((juxt :re-frame) latest-artifacts)}
-              :main {:cljs {:ns {:require '[{:ns goog.dom
-                                             :as gdom}
-                                            {:ns reagent.core
-                                             :as ra}
-                                            {:ns re-frame.core
-                                             :as rf}]}}}}}
-
-   {:keyword :garden
-    :name "+garden"
-    :description "Uses Garden, dynamically injects CSS from front end code."
-    :dependencies [:clojurescript]
-    :context {:project {:dependencies ((juxt :garden) latest-artifacts)}
-              :main {:cljs {:ns {:require '[{:ns goog.style
-                                             :as gs}
-                                            {:ns garden.core
-                                             :as gd}]}}}}}
-
-   {:keyword :devcards
-    :name "+devcards"
-    :description "Uses Devcards for developing UI components in isolation from the rest of the app."
-    :dependencies [:clojurescript]
-    :context {:project {:dependencies ((juxt :devcards) latest-artifacts)
-                        :aliases {"fig:devcards" ["trampoline" "run" "-m" "figwheel.main" "-b" "devcards"]}}
-              :devcards {:cljs
-                         ^{:ctx [:project :ns :name]}
-                          (fn [project-ns]
-                            (let [namespace (str project-ns ".devcards")]
-                              {:path (str "cljs/" (name-to-path namespace) ".cljs")
-                               :ns {:name namespace
-                                    :require [{:ns (str project-ns ".core")}]
-                                    :require-macros '[{:ns devcards.core
-                                                       :as dc
-                                                       :refer [defcard]}]}}))}
-              :main {:cljs
-                     ^:ctx (fn [ctx]
-                             {:ns {:require '[{:ns devcards.core}]
-                                   :require-macros (into []
-                                                         (remove nil?)
-                                                         [{:ns 'devcards.core
-                                                           :as 'dc
-                                                           :refer (into []
-                                                                        (remove nil?)
-                                                                        [(when (-> ctx :tag :clojurescript)
-                                                                           'defcard)
-                                                                         (when (-> ctx :tag :reagent)
-                                                                           'defcard-rg)])}
-                                                          (when (-> ctx :tag :rum)
-                                                            '{:ns sablono.core
-                                                              :as sab})])}})}}}])
-
-   ;{:keyword :sente
-   ; :name "+sente"
-   ; :description "Uses Sente for real time communication between front end and back end."
-   ; :dependencies [:clojure :clojurescript]
-   ; :context {}}
-
+(def all-tags node/all-nodes)
 
 (def tag-by-keyword
   (into {}
@@ -317,22 +137,20 @@ Example:
 
 (defn make-context [project-name options tags]
   (let [project-ns (sanitize-ns project-name)
-        dep-comparator (fn [[x _] [y _]] ; orders the dependencies by their unqualified names
-                         (compare (name x) (name y)))
         configs (into [{:tag (coll->true-map tags)}
                        {:project {:name project-name
                                   :options options
                                   :year (t/year (t/now))
                                   :ns {:name project-ns
-                                       :path (name-to-path project-ns)}
-                                  :dependencies (sorted-set-by dep-comparator)
-                                  :plugins (sorted-set-by dep-comparator)}}]
+                                       :path (name-to-path project-ns)}}}
+                       (:context latest-artifact/node)]
                       (map (comp :context tag-by-keyword))
                       tags)
         config (reduce context-merge {} configs)]
     (-> config
-        (update-in [:project :dependencies] #(into [] %))
-        (update-in [:project :plugins] #(into [] %)))))
+        (update-in [:project :dependencies] util/artifacts)
+        (update-in [:project :plugins] util/artifacts)
+        (update-in [:project :profiles :dev :dependencies] util/artifacts))))
 
 ;(make-context "patate" [:clojurescript :reagent :garden])
 

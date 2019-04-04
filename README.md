@@ -27,14 +27,11 @@ Depending on what the user chooses, some options will be implicitly included. Fo
 
 ## Usage
 
-> **Note:** To use the snapshot version instead of a stable release, insert
-` --snapshot -- ` between the project name and the options.
-
 ```shell
 lein new ratatouille <project-name> [option]+
 ```
 
-To display the helg message and the list of available options,
+To display the help message and the list of available options,
 leave the options empty.
 
 ```shell

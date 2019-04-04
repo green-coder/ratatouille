@@ -1,6 +1,7 @@
 (ns leiningen.new.selmer-util
   (:require [clojure.string :as str]
-            [selmer.filters :as filters]))
+            [selmer.filters :as filters]
+            [ratatouille.node.latest-artifact :as latest-artifact]))
 
 (defn- meta->str [m]
   (case (count m)
@@ -52,3 +53,7 @@
          (when gen-class
            "\n  (:gen-class)")
          ")")))
+
+(defn artifacts [keywords]
+  (let [artifacts (-> latest-artifact/node :context :latest-artifacts)]
+    (into [] (map artifacts) keywords)))
